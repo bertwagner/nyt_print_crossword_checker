@@ -17,6 +17,8 @@ provider "aws" {
 resource "aws_s3_bucket" "crosscheck_app" {
   bucket = "crosscheck-app"
   acl    = "public-read"
+  policy = file("policies/s3-public-website.json")
+
 
   website {
     index_document = "index.html"
