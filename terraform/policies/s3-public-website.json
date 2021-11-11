@@ -9,7 +9,7 @@
                 "s3:GetObject"
             ],
             "Resource": [
-                "arn:aws:s3:::crosscheck-app/*"
+                "arn:aws:s3:::crosschecker.app/*"
             ]
         }
     ]

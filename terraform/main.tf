@@ -14,8 +14,8 @@ provider "aws" {
   region  = "us-east-2"
 }
 
-resource "aws_s3_bucket" "crosscheck_app" {
-  bucket = "crosscheck-app"
+resource "aws_s3_bucket" "crosschecker_app" {
+  bucket = "crosschecker.app"
   acl    = "public-read"
   policy = file("policies/s3-public-website.json")
 
