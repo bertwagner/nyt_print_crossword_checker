@@ -2,4 +2,4 @@
 
 An app for checking the answers of your printed New York Times Crossword puzzle.
 
-[Demo](http://crosscheck-app.s3-website.us-east-2.amazonaws.com/)
+[Demo](https://crosschecker.app)
