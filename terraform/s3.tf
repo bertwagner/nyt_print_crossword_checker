@@ -9,3 +9,11 @@ resource "aws_s3_bucket" "crosschecker_app" {
     error_document = "error.html"
   }
 }
+
+resource "aws_s3_bucket" "terraform_state" {
+  bucket = "crosschecker.app-state"
+  acl = "private"
+  versioning {
+    enabled = true
+  }
+}
