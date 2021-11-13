@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>HTML 5 Boilerplate</title>
+    <title>NYT Crossword Checker</title>
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <h1>NYT Crossword Checker</h1>
     <p>Capture a photo of your partially or completely filled in print version of the NYT Crossword Puzzle</p>
-    <video></video>
+    
+    <video id="player" controls autoplay></video>
+    <button id="capture">Capture</button>
+    <canvas id="canvas" width=320 height=240></canvas>
+
     <script src="app.js"></script>
   </body>
 </html>

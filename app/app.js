@@ -1,13 +1,20 @@
-// Prefer camera resolution nearest to 1280x720.
-var constraints = { audio: false, video: { width: 640, height: 360 } };
+const player = document.getElementById('player');
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+const captureButton = document.getElementById('capture');
 
+const constraints = {
+  video: true,
+};
+
+captureButton.addEventListener('click', () => {
+  // Draw the video frame to the canvas.
+  context.drawImage(player, 0, 0, canvas.width, canvas.height);
+});
+
+// Attach the video stream to the video element and autoplay.
 navigator.mediaDevices.getUserMedia(constraints)
-.then(function(mediaStream) {
-  var video = document.querySelector('video');
-  video.srcObject = mediaStream;
-  video.onloadedmetadata = function(e) {
-    video.play();
-  };
-})
-.catch(function(err) { console.log(err.name + ": " + err.message); }); // always check for errors at the end.
+  .then((stream) => {
+    player.srcObject = stream;
+  });
 

@@ -10,3 +10,6 @@
 
 # .tfvars, which usually contain contain sensitive data
 *.tfvars
+
+# temporary swap files
+*.swp
