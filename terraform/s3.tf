@@ -26,3 +26,10 @@ resource "aws_s3_bucket" "crosschecker_app_uploads" {
   bucket = "crosschecker.app-uploads"
   acl = "private"
 }
+
+
+# Lambda source code
+resource "aws_s3_bucket" "lambda_functions" {
+  bucket = "crosschecker.app-lambda-functions"
+  acl = "private"
+}
