@@ -1,20 +1,40 @@
-const player = document.getElementById('player');
-const canvas = document.getElementById('canvas');
-const context = canvas.getContext('2d');
-const captureButton = document.getElementById('capture');
+/*
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
 
-const constraints = {
-  video: true,
+'use strict';
+
+// Put variables in global scope to make them available to the browser console.
+const video = document.querySelector('video');
+const canvas = window.canvas = document.querySelector('canvas');
+canvas.width = 300;
+canvas.height = 240;
+
+const button = document.querySelector('button');
+button.onclick = function() {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  video.style.display = 'none';
+  button.style.display = 'none'
 };
 
-captureButton.addEventListener('click', () => {
-  // Draw the video frame to the canvas.
-  context.drawImage(player, 0, 0, canvas.width, canvas.height);
-});
+const constraints = {
+  audio: false,
+  video: { facingMode: "environment"}
+};
 
-// Attach the video stream to the video element and autoplay.
-navigator.mediaDevices.getUserMedia(constraints)
-  .then((stream) => {
-    player.srcObject = stream;
-  });
+function handleSuccess(stream) {
+  window.stream = stream; // make stream available to browser console
+  video.srcObject = stream;
+}
 
+function handleError(error) {
+  console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+}
+
+navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError);
