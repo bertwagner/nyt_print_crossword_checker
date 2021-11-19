@@ -13,3 +13,6 @@
 
 # temporary swap files
 *.swp
+
+# zip files of packaged code
+*.zip
