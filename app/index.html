@@ -11,10 +11,13 @@
     <h1>NYT Crossword Checker</h1>
     <p>Capture a photo of your partially or completely filled in print version of the NYT Crossword Puzzle</p>
     
-    <video id="player" controls autoplay></video>
-    <button id="capture">Capture</button>
-    <canvas id="canvas" width=320 height=240></canvas>
-
+    <div id="container">
+      <video playsinline autoplay></video>
+      <button>Take snapshot</button>
+      <canvas></canvas>
+    </div>
+  
+    <script src="adapter-latest.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
