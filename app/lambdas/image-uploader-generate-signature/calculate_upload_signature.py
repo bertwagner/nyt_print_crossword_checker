@@ -55,16 +55,14 @@ def lambda_handler(event, context):
     datestamp = t.strftime('%Y%m%d') #"20211129"
     expiration_datestamp = (t + datetime.timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%SZ') #"2021-12-29T12:00:00.000Z" #
 
-    string_to_sign = base64_upload_policy(expiration_datestamp,amzdate,datestamp).decode('utf-8')
-
+    policy = base64_upload_policy(expiration_datestamp,amzdate,datestamp).decode('utf-8')
     secret = get_secret()
     signing_key = get_signature_key(secret,datestamp,"us-east-1","s3")
+    signature = sign(signing_key,policy).hex()
 
-    signature = sign(signing_key,string_to_sign).hex()
-
-    message = 'Hello {} {}!'.format(event['first_name'], event['last_name'])  
     return { 
-        'message' : message
+        'policy' : policy,
+        'signature' : signature
     }
 
 
