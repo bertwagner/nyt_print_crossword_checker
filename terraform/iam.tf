@@ -53,7 +53,7 @@ resource "aws_iam_policy" "iam_lambda_generate-signature" {
   policy = file("policies/iam-lambda-generate-signature.json")
 }
 
-resource "aws_iam_role_policy_attachment" "iam_lambda_generate-signature" {
+resource "aws_iam_role_policy_attachment" "iam_lambda_generate_signature" {
   role = aws_iam_role.iam_lambda_generate_signature.name
   policy_arn = aws_iam_policy.iam_lambda_generate-signature.arn
 }

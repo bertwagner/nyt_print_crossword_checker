@@ -60,9 +60,18 @@ def lambda_handler(event, context):
     signing_key = get_signature_key(secret,datestamp,"us-east-1","s3")
     signature = sign(signing_key,policy).hex()
 
-    return { 
+    response = {
         'policy' : policy,
         'signature' : signature
+    }
+
+    return {
+        "statusCode": 200,
+        'headers': { 'Content-Type': 'application/json' },
+        "body": json.dumps(response)
+    }
+    return { 
+        
     }
 
 
