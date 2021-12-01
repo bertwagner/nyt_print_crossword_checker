@@ -7,3 +7,11 @@ resource "aws_lambda_function" "image_uploader_signature" {
   s3_key = "image-uploader-generate-signature.zip"
   handler       = "calculate_upload_signature.lambda_handler"
 }
+
+resource "aws_lambda_permission" "image_uploader_signature" {
+	action        = "lambda:InvokeFunction"
+	function_name = aws_lambda_function.image_uploader_signature.arn
+	principal     = "apigateway.amazonaws.com"
+
+	source_arn = "${aws_apigatewayv2_api.image-uploader-signature-api.execution_arn}/*/*"
+}
