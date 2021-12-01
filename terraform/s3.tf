@@ -20,10 +20,16 @@ resource "aws_s3_bucket" "crosschecker_app" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "crosschecker_app_public_access" {
+  bucket = aws_s3_bucket.crosschecker_app.id
+
+  block_public_policy = false
+}
+
 
 # Unprocessed user-uploaded crossword images
-resource "aws_s3_bucket" "crosschecker_app_uploads" {
-  bucket = "crosschecker.app-uploads"
+resource "aws_s3_bucket" "crosschecker_app_data" {
+  bucket = "crosschecker.app-data"
   acl = "private"
 }
 
