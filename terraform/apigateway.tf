@@ -35,20 +35,20 @@ resource "aws_apigatewayv2_integration" "image_uploader_signature_api" {
 }
 
 
-# resource "aws_apigatewayv2_domain_name" "image_uploader_signature_api" {
-#   domain_name = "api.crosschecker.app"
+resource "aws_apigatewayv2_domain_name" "image_uploader_signature_api" {
+  domain_name = "api.crosschecker.app"
 
-#   domain_name_configuration {
-#     certificate_arn = aws_acm_certificate.cert.arn
-#     endpoint_type   = "REGIONAL"
-#     security_policy = "TLS_1_2"
-#   }
-# }
+  domain_name_configuration {
+    certificate_arn = aws_acm_certificate.cert.arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+}
 
-# resource "aws_apigatewayv2_api_mapping" "image_uploader_signature_api" {
-#   api_id      = aws_apigatewayv2_api.image_uploader_signature_api.id
-#   domain_name = aws_apigatewayv2_domain_name.image_uploader_signature_api.id
-#   stage       = aws_apigatewayv2_stage.example.id
-# }
+resource "aws_apigatewayv2_api_mapping" "image_uploader_signature_api" {
+  api_id      = aws_apigatewayv2_api.image_uploader_signature_api.id
+  domain_name = aws_apigatewayv2_domain_name.image_uploader_signature_api.id
+  stage       = aws_apigatewayv2_stage.image_uploader_signature_api.id
+}
 
 
