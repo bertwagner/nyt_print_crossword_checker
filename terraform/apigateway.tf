@@ -1,6 +1,9 @@
 resource "aws_apigatewayv2_api" "image_uploader_signature_api" {
   name          = "crosschecker.app-image-uploader-signature"
   protocol_type = "HTTP"
+  cors_configuration {
+    allow_origins = ["https://crosschecker.app"]
+  }
 }
 
 resource "aws_apigatewayv2_route" "image_uploader_signature_api" {
