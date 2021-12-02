@@ -19,18 +19,18 @@
     </div>
     <!-- https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-authentication-HTTPPOST.html -->
     <form action="https://s3.amazonaws.com/crosschecker.app-data/" method="post" enctype="multipart/form-data">
-      Key to upload: 
-      <input type="input"  name="key" value="image_uploads/${filename}" /><br />
+ 
+      <input type="hidden"  name="key" value="image_uploads/${filename}" /><br />
       <input type="hidden" name="acl" value="private" />
-      Content-Type: 
-      <input type="text"   name="X-Amz-Credential" value="AKIA3ALIEMYGXF3P5TPZ/20211201/us-east-1/s3/aws4_request" />
-      <input type="text"   name="X-Amz-Algorithm" value="AWS4-HMAC-SHA256" />
-      <input type="text"   name="X-Amz-Date" value="20211201T013253Z" />
+
+      <input type="text"   id="x-amz-credential" name="X-Amz-Credential" value="" />
+      <input type="hidden"   name="X-Amz-Algorithm" value="AWS4-HMAC-SHA256" />
+      <input type="text"   id="x-amz-date"  name="X-Amz-Date" value="" />
   
-      Tags for File: 
-      <input type="hidden" name="Policy" value='eyAiZXhwaXJhdGlvbiI6ICIyMDIxLTEyLTAxVDAxOjM3OjUzWiIsDQogICAgICAgICAgICAgICAgICAgICJjb25kaXRpb25zIjogWw0KICAgICAgICAgICAgICAgICAgICAgICAgeyJidWNrZXQiOiAiY3Jvc3NjaGVja2VyLmFwcC1kYXRhIn0sDQogICAgICAgICAgICAgICAgICAgICAgICBbInN0YXJ0cy13aXRoIiwgIiRrZXkiLCAiaW1hZ2VfdXBsb2Fkcy8iXSwNCiAgICAgICAgICAgICAgICAgICAgICAgIHsiYWNsIjogInByaXZhdGUifSwNCiAgICAgICAgICAgICAgICAgICAgICAgIHsieC1hbXotY3JlZGVudGlhbCI6ICJBS0lBM0FMSUVNWUdYRjNQNVRQWi8yMDIxMTIwMS91cy1lYXN0LTEvczMvYXdzNF9yZXF1ZXN0In0sDQogICAgICAgICAgICAgICAgICAgICAgICB7IngtYW16LWFsZ29yaXRobSI6ICJBV1M0LUhNQUMtU0hBMjU2In0sDQogICAgICAgICAgICAgICAgICAgICAgICB7IngtYW16LWRhdGUiOiAiMjAyMTEyMDFUMDEzMjUzWiIgfQ0KICAgICAgICAgICAgICAgICAgICBdDQogICAgICAgICAgICAgICAgfQ==' />
-      <input type="text" name="X-Amz-Signature" value="074980c0a3557ad73f2383e5f1f60e6f80c43f36dcc7e512d5f6a8b862cfc31e" />
-      File: 
+
+      <input type="text" id="policy" name="Policy" value='' />
+      <input type="text" id="x-amz-signature" name="X-Amz-Signature" value="" />
+
       <input type="file"   name="file" /> <br />
       <!-- The elements after this will be ignored -->
       <input type="submit" name="submit" value="Upload to Amazon S3" />

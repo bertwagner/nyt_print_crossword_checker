@@ -1,11 +1,3 @@
-/*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
-
 'use strict';
 
 // Put variables in global scope to make them available to the browser console.
@@ -38,3 +30,29 @@ function handleError(error) {
 }
 
 navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError);
+
+
+function retrieve_signature() {
+  var url = "https://api.crosschecker.app/signature";
+  fetch(url).then(function(response) {
+    if (response.ok) {
+      return response.json();
+    }
+
+    return Promise.reject(response);
+  }).then(function (data) {
+    var date = data["date"];
+    var shortDate = date.substring(0,8)
+    
+    var credential = `AKIA3ALIEMYGXF3P5TPZ/${shortDate}/us-east-1/s3/aws4_request`;
+
+    document.querySelector("#x-amz-date").value = date;
+    document.querySelector("#x-amz-credential").value = credential;
+    document.querySelector("#policy").value = data["policy"];
+    document.querySelector("#x-amz-signature").value = data["signature"];
+    
+  }).catch(function(error) {
+    console.warn('Something went wrong',error);
+  })
+};
+retrieve_signature();

@@ -62,16 +62,14 @@ def lambda_handler(event, context):
 
     response = {
         'policy' : policy,
-        'signature' : signature
+        'signature' : signature,
+        'date' : amzdate
     }
 
     return {
         "statusCode": 200,
         'headers': { 'Content-Type': 'application/json' },
         "body": json.dumps(response)
-    }
-    return { 
-        
     }
 
 
