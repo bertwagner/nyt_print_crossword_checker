@@ -17,6 +17,7 @@ def base64_upload_policy(expiration,amzdate,datestamp):
                         {"bucket": "crosschecker.app-data"},
                         ["starts-with", "$key", "image_uploads/"],
                         {"acl": "private"},
+                        ["starts-with", "$Content-Type", "image/png"],
                         {"x-amz-credential": "'''+ACCESS_KEY+'''/'''+datestamp+'''/us-east-1/s3/aws4_request"},
                         {"x-amz-algorithm": "AWS4-HMAC-SHA256"},
                         {"x-amz-date": "'''+amzdate+'''" }
