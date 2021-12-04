@@ -31,6 +31,14 @@ resource "aws_s3_bucket_public_access_block" "crosschecker_app_public_access" {
 resource "aws_s3_bucket" "crosschecker_app_data" {
   bucket = "crosschecker.app-data"
   acl = "private"
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET", "POST"]
+    allowed_origins = ["https://crosschecker.app"]
+    expose_headers  = [""]
+    max_age_seconds = 3000
+  }
 }
 
 
