@@ -1,30 +1,49 @@
 'use strict';
 
 // Put variables in global scope to make them available to the browser console.
-const video = document.querySelector('video');
-const canvas = window.canvas = document.querySelector('canvas');
+const video = document.querySelector('#camera');
+const canvas = window.canvas = document.querySelector('#photo');
+const retake = document.querySelector("#retake");
+const use = document.querySelector("#use-this");
+
+var xAmzCredential = "";
+var xAmzAlgorithm = "";
+var xAmzDate = "";
+var policy = "";
+var signature = "";
+
 canvas.width = 300;
 canvas.height = 240;
 
-const button = document.querySelector('button');
+const button = document.querySelector('#take');
 button.onclick = function() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-  video.style.display = 'none';
-  button.style.display = 'none';
+  video.classList.add("hidden");
+  button.classList.add("hidden");
+  // retake.classList.remove("hidden");
+  use.classList.remove("hidden");
+};
+
+function uuidv4() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
+use.onclick = function() {
   var blobData = dataURItoBlob(canvas.toDataURL());
 
   const formData  = new FormData();
-  
-  formData.append("key", "image_uploads/def.png");
+  formData.append("key", `image_uploads/${uuidv4()}.png`);
   formData.append("acl", "private");
   formData.append("Content-Type", "image/png");
-  formData.append("X-Amz-Credential", document.querySelector("#x-amz-credential").value);
+  formData.append("X-Amz-Credential", xAmzCredential);
   formData.append("X-Amz-Algorithm", "AWS4-HMAC-SHA256");
-  formData.append("X-Amz-Date", document.querySelector("#x-amz-date").value);
-  formData.append("Policy", document.querySelector("#policy").value);
-  formData.append("X-Amz-Signature", document.querySelector("#x-amz-signature").value);
+  formData.append("X-Amz-Date", xAmzDate);
+  formData.append("Policy", policy);
+  formData.append("X-Amz-Signature", signature);
   formData.append("file", blobData);
 
   var url = "https://s3.amazonaws.com/crosschecker.app-data/";
@@ -38,13 +57,15 @@ button.onclick = function() {
 
     return Promise.reject(response);
   }).then(function (data) {
+    retake.classList.add("hidden");
+    use.classList.add("hidden");
+    canvas.classList.add("hidden");
     console.log("returned:", data);
     
   }).catch(function(error) {
     console.warn('Something went wrong',error);
   })
-
-};
+}
 
 const constraints = {
   audio: false,
@@ -77,10 +98,10 @@ function retrieve_signature() {
     
     var credential = `AKIA3ALIEMYGXF3P5TPZ/${shortDate}/us-east-1/s3/aws4_request`;
 
-    document.querySelector("#x-amz-date").value = date;
-    document.querySelector("#x-amz-credential").value = credential;
-    document.querySelector("#policy").value = data["policy"];
-    document.querySelector("#x-amz-signature").value = data["signature"];
+    xAmzCredential = credential;
+    xAmzDate = date;
+    policy = data["policy"];
+    signature = data["signature"]
     
   }).catch(function(error) {
     console.warn('Something went wrong',error);

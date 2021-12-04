@@ -12,29 +12,13 @@
     <h1>NYT Crossword Checker</h1>
     <p>Capture a photo of your partially or completely filled in print version of the NYT Crossword Puzzle</p>
     
-    <div id="container">
-      <video playsinline autoplay></video>
-      <button>Take snapshot</button>
-      <canvas></canvas>
-    </div>
-    <!-- https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-authentication-HTTPPOST.html -->
-    <form id="uploadForm" action="https://s3.amazonaws.com/crosschecker.app-data/" method="post" enctype="multipart/form-data">
- 
-      <input type="hidden"  name="key" value="image_uploads/def.png" /><br />
-      <input type="hidden" name="acl" value="private" />
-      <input type="" id="Content-Type" name="Content-Type" value="image/png">
-      <input type="text"   id="x-amz-credential" name="X-Amz-Credential" value="" />
-      <input type="hidden"   name="X-Amz-Algorithm" value="AWS4-HMAC-SHA256" />
-      <input type="text"   id="x-amz-date"  name="X-Amz-Date" value="" />
-  
 
-      <input type="text" id="policy" name="Policy" value='' />
-      <input type="text" id="x-amz-signature" name="X-Amz-Signature" value="" />
-
-      <input type="text" id="file"   name="file"  /> <br />
-      <!-- The elements after this will be ignored -->
-      <input type="submit" name="submit" value="Upload to Amazon S3" />
-    </form>
+    <video id="camera" playsinline autoplay></video>
+    <canvas id="photo"></canvas>
+    <button id="take">Take photo</button>
+    <button id="retake" class="hidden">Retake</button>
+    <button id="use-this" class="hidden">Use photo</button>
+    <span id="success-message" class="hidden">Success!</span>
   
     <script src="adapter-latest.js"></script>
     <script src="app.js"></script>
