@@ -105,6 +105,9 @@
 
   use.onclick = function() {
     canvas.classList.add("hidden");
+    retake.classList.add("hidden");
+    use.classList.add("hidden");
+    
     var blobData = dataURItoBlob(canvas.toDataURL());
 
     const formData  = new FormData();
@@ -130,8 +133,7 @@
       return Promise.reject(response);
     }).then(function (data) {
       // data=data.json()
-      retake.classList.add("hidden");
-      use.classList.add("hidden");
+     
       
       document.querySelector("#success-message").classList.remove("hidden");
     }).catch(function(error) {
