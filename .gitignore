@@ -16,3 +16,9 @@
 
 # zip files of packaged code
 *.zip
+
+# data
+ml_model/data/processed/*
+!ml_model/data/processed/.gitkeep
+ml_model/data/raw/*
+!ml_model/data/raw/.gitkeep

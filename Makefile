@@ -7,3 +7,6 @@ lambdas:
 	zip -rj app/lambdas/image-uploader-generate-signature.zip app/lambdas/image-uploader-generate-signature
 	aws s3 cp app/lambdas/image-uploader-generate-signature.zip s3://crosschecker.app-lambda-functions
 	aws lambda update-function-code --function-name crosschecker-image-uploader-generate-signature --s3-bucket crosschecker.app-lambda-functions --s3-key image-uploader-generate-signature.zip > /dev/null
+
+raw_data:
+	aws s3 cp s3://crosschecker.app-data/image_uploads/ ml_model/data/raw --recursive
