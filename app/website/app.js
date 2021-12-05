@@ -19,7 +19,6 @@
   canvas.height = 240;
 
   var xAmzCredential = "";
-  var xAmzAlgorithm = "";
   var xAmzDate = "";
   var policy = "";
   var signature = "";
@@ -95,6 +94,7 @@
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.classList.remove("hidden");
     video.classList.add("hidden");
     take.classList.add("hidden");
     // retake.classList.remove("hidden");
@@ -104,6 +104,7 @@
 
 
   use.onclick = function() {
+    canvas.classList.add("hidden");
     var blobData = dataURItoBlob(canvas.toDataURL());
 
     const formData  = new FormData();
@@ -131,7 +132,8 @@
       // data=data.json()
       retake.classList.add("hidden");
       use.classList.add("hidden");
-      canvas.classList.add("hidden");
+      
+      document.querySelector("#success-message").classList.remove("hidden");
     }).catch(function(error) {
       console.warn('Something went wrong',error);
     })
