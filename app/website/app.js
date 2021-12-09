@@ -9,6 +9,7 @@
   const take = document.querySelector('#take');
   const retake = document.querySelector("#retake");
   const use = document.querySelector("#use-this");
+  const puzzle_date = document.querySelector("#puzzle-date");
 
   const constraints = {
     audio: false,
@@ -107,11 +108,12 @@
     canvas.classList.add("hidden");
     retake.classList.add("hidden");
     use.classList.add("hidden");
+    document.querySelector("#puzzle-date-selection").classList.add("hidden");
     
     var blobData = dataURItoBlob(canvas.toDataURL());
 
     const formData  = new FormData();
-    formData.append("key", `image_uploads/${uuidv4()}.png`);
+    formData.append("key", `image_uploads/${puzzle_date.value}-${uuidv4()}.png`);
     formData.append("acl", "private");
     formData.append("Content-Type", "image/png");
     formData.append("X-Amz-Credential", xAmzCredential);
