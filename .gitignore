@@ -25,3 +25,4 @@ ml_model/data/raw/*
 
 # pycache
 __pycache__
+*egg-info*
