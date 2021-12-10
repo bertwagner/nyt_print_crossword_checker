@@ -16,6 +16,7 @@ jmespath==0.10.0
 jupyter-client==7.1.0
 jupyter-core==4.9.1
 kiwisolver==1.3.2
+matplotlib==3.5.0
 matplotlib-inline==0.1.3
 nest-asyncio==1.5.4
 numpy==1.21.4
@@ -34,6 +35,7 @@ pyzmq==22.3.0
 s3transfer==0.5.0
 setuptools-scm==6.3.2
 six==1.16.0
+-e git+https://github.com/bertwagner/nyt_print_crossword_checker.git@8884df485d5720092cae30ba3cdc1938a5b97d83#egg=src&subdirectory=ml_model
 tomli==1.2.2
 tornado==6.1
 traitlets==5.1.1
