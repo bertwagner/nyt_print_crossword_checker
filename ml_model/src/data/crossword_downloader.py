@@ -52,23 +52,6 @@ class CrosswordDownloader:
         r = s.post(url,json=json.loads(data))
 
         # Second page that asks for password
-        # url = 'https://myaccount.nytimes.com/svc/lire_ui/login'
-        # data = '{"username":"%s","auth_token":"%s","form_view":"login","password":"%s","remember_me":"Y"}' % (email,auth_token,password)
-        # headers = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0', 
-        #             'Accept' : 'application/json',
-        #             'Accept-Language' : 'en-US,en;q=0.5',
-        #             'Referer' : 'https://myaccount.nytimes.com/auth/enter-email?response_type=cookie&client_id=lgcl&redirect_uri=https%3A%2F%2Fwww.nytimes.com',
-        #             'Content-Type' : 'application/json',
-        #             'Req-Details' : '[[it:lui]]',
-        #             'Origin' : 'https://myaccount.nytimes.com',
-        #             'DNT' : '1', 
-        #             'Connection' : 'keep-alive',
-        #             'Sec-Fetch-Dest' : 'empty',
-        #             'Sec-Fetch-Mode' : 'cors',
-        #             'Sec-Fetch-Site' : 'same-origin',
-        #             'TE' : 'trailers',
-        #             'Accept-Encoding': 'gzip, deflate' }
-        # r = s.post(url,json=json.loads(data), headers=headers)
         url = "https://myaccount.nytimes.com/svc/lire_ui/login"
 
         payload="{\"username\":\"%s\",\"auth_token\":\"%s\",\"form_view\":\"login\",\"password\":\"%s\",\"remember_me\":\"Y\"}" % (email,auth_token,password)
@@ -115,4 +98,4 @@ class CrosswordDownloader:
 
 if __name__ == '__main__':
     cd = CrosswordDownloader()
-    targets = cd.get_answer_key(datetime.date(2021,12,12))
+    targets = cd.get_answer_key(datetime.date(2021,12,11))
