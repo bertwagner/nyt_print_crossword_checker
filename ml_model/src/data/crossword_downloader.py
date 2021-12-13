@@ -21,8 +21,9 @@ class CrosswordDownloader:
 
     def _check_crossword_answer_key(self,date):
         # check if answer key is cached
+        date_string = date.strftime("%Y-%m-%d")
         try:
-            self.s3.head_object(Bucket=self.BUCKETNAME, Key=f'nyt_answer_keys/{date}.json')
+            self.s3.head_object(Bucket=self.BUCKETNAME, Key=f'nyt_answer_keys/{date_string}.json')
         except ClientError:
             self._download_crossword_answer_key(date)
         
@@ -94,7 +95,6 @@ class CrosswordDownloader:
 
         self._save_answer_key_to_s3(r.content,date)
 
-    
     def _save_answer_key_to_s3(self,json,date):
         filename = "%s.json" % date.strftime("%Y-%m-%d")
         self.s3.put_object(Body=json, Bucket='crosschecker.app-data', Key='nyt_answer_keys/%s' % filename)
@@ -104,4 +104,4 @@ class CrosswordDownloader:
 
 if __name__ == '__main__':
     cd = CrosswordDownloader()
-    targets = cd.get_answer_key(datetime.date(2021,12,7))
+    targets = cd.get_answer_key(datetime.date(2021,12,13))
