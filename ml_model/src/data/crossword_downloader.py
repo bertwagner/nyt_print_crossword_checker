@@ -8,6 +8,7 @@ import re
 import datetime
 
 class CrosswordDownloader:
+    BUCKETNAME='crosschecker.app-data'
 
     def __init__(self):
         self.session = boto3.Session()
@@ -21,9 +22,17 @@ class CrosswordDownloader:
     def _check_crossword_answer_key(self,date):
         # check if answer key is cached
         try:
-            self.s3.head_object(Bucket='crosschecker.app-data', Key=f'nyt_answer_keys/{date}.json')
+            self.s3.head_object(Bucket=self.BUCKETNAME, Key=f'nyt_answer_keys/{date}.json')
         except ClientError:
             self._download_crossword_answer_key(date)
+        
+        # get the answer key form s3
+        s3_object = self.s3.get_object(Bucket=self.BUCKETNAME, Key=f'nyt_answer_keys/{date}.json')
+        raw_json_answer_key = json.loads(s3_object['Body'].read().decode('utf-8'))
+
+        processed_answer_key = self._process_answer_key(raw_json_answer_key)
+
+        return processed_answer_key
 
     def _get_secret(self):
         client = boto3.client('secretsmanager')
@@ -73,29 +82,26 @@ class CrosswordDownloader:
 
         r = s.request("POST", url, headers=headers, data=payload)
         
-        puzzle_id = self._get_puzzle_id(date)
+        # get the puzzle id
+        date_string = date.strftime("%Y-%m-%d")
+        url = 'https://nyt-games-prd.appspot.com/svc/crosswords/v3/36569100/puzzles.json?publish_type=daily&sort_order=asc&sort_by=print_date&date_start=%s&date_end=%s' % (date_string,date_string)
+        r = s.post(url,json=json.loads(data))
+        puzzle_id = r.json()['results'][0]['puzzle_id']
 
         # Download the json
         url = 'https://www.nytimes.com/svc/crosswords/v2/puzzle/%s.json' % puzzle_id
         r = s.get(url)
 
         self._save_answer_key_to_s3(r.content,date)
-        
-        
-    def _get_puzzle_id(self, date):
-        # calculate the date diff between today and our calibration date to figure out the puzzle id
-        starting_integer = 19740
-        calibration_date = datetime.date(2021,12,12)
-        delta = date - calibration_date
-        puzzle_id = starting_integer + delta.days
-        return puzzle_id
+
     
     def _save_answer_key_to_s3(self,json,date):
         filename = "%s.json" % date.strftime("%Y-%m-%d")
         self.s3.put_object(Body=json, Bucket='crosschecker.app-data', Key='nyt_answer_keys/%s' % filename)
 
-        
+    def _process_answer_key(self,json):
+        return json["results"][0]["puzzle_data"]["answers"]
 
 if __name__ == '__main__':
     cd = CrosswordDownloader()
-    targets = cd.get_answer_key(datetime.date(2021,12,11))
+    targets = cd.get_answer_key(datetime.date(2021,12,7))
