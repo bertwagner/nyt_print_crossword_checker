@@ -12,4 +12,4 @@ lambdas:
 
 # Download raw user-uploaded data from main crosschecker.app
 raw_data:
-	aws s3 cp s3://crosschecker.app-data/image_uploads/ ml_model/data/raw --recursive
+	aws s3 sync s3://crosschecker.app-data/image_uploads/ ml_model/data/raw/image_uploads
