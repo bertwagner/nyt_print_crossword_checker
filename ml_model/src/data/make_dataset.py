@@ -8,6 +8,9 @@ import shutil
 
 def main(input_filepath, output_filepath,delete_files):
 
+    warped_output_path = os.path.join(output_filepath,"warped")
+    __make_folder_if_not_exists(warped_output_path,delete_files)
+
     for file in os.scandir(input_filepath):
         puzzle_date = datetime.datetime.strptime(file.name[0:10],'%Y-%m-%d').date()
         image_raw = cv2.imread(os.path.join(input_filepath,file.name))
@@ -15,8 +18,8 @@ def main(input_filepath, output_filepath,delete_files):
         # warp and save image
         processor = ip.ImageProcessor(image_raw)
         processor.warp_and_transform()
-        warped_output_path = os.path.join(output_filepath,"warped")
-        __make_folder_if_not_exists(warped_output_path,delete_files)
+       
+        
         cv2.imwrite(os.path.join(warped_output_path,file.name),processor.image['warped'])
 
         # slice and save individual cell images
