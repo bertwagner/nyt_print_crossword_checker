@@ -42,13 +42,10 @@ class ImageProcessor:
         # find the corners of the image
         peri = cv2.arcLength(best_cnt, True)
         corners = cv2.approxPolyDP(best_cnt, 0.04 * peri, True)
-        corners
+        
         # All points are in format [cols, rows]
-        pt_A = corners[0][0]
-        pt_B = corners[1][0]
-        pt_C = corners[2][0]
-        pt_D = corners[3][0]
-
+        pt_A, pt_B, pt_C, pt_D = self.__order_corners(corners)
+        
         # Calculate widths/heights using L2 norm
         width_AD = np.sqrt(((pt_A[0] - pt_D[0]) ** 2) + ((pt_A[1] - pt_D[1]) ** 2))
         width_BC = np.sqrt(((pt_B[0] - pt_C[0]) ** 2) + ((pt_B[1] - pt_C[1]) ** 2))
@@ -73,6 +70,24 @@ class ImageProcessor:
         warped = cv2.warpPerspective(rgbcopy,M,(maxWidth, maxHeight),flags=cv2.INTER_LINEAR)
         self.image['warped'] = warped
     
+    def __order_corners(self,corners):
+        # We always want the top left corner to be first corner and the rest of the points to come in a counterclockwise order
+        points = []
+        points.append(corners[0][0])
+        points.append(corners[1][0])
+        points.append(corners[2][0])
+        points.append(corners[3][0])
+
+        points.sort(key=lambda x:x[0])
+
+        leftPoints = points[:2]
+        rightPoints = points[2:]
+
+        leftPoints.sort(key=lambda x:x[1])
+        rightPoints.sort(key=lambda x:x[1])
+
+        return (leftPoints[0], leftPoints[1], rightPoints[1],rightPoints[0])
+
     def slice_up_grid(self):
         # find Canny edges
         edges = cv2.Canny(self.image['warped'], 50, 200)
