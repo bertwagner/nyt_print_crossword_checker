@@ -9,7 +9,7 @@ def main(cell_input_path,crossword_input_path):
 
     filenames,images = __load_cells(cell_input_path)
     answers = __load_answers(crossword_input_path, filenames.keys())
-
+    # TODO: These counts don't match.  Need to probably output these into folders based on the labelled letter to double check answers are correct
     test=1234
     
     
