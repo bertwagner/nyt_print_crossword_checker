@@ -11,5 +11,9 @@ lambdas:
 	aws lambda update-function-code --function-name crosschecker-image-uploader-generate-signature --s3-bucket crosschecker.app-lambda-functions --s3-key image-uploader-generate-signature.zip > /dev/null
 
 # Download raw user-uploaded data from main crosschecker.app
-raw_data:
+raw_images:
 	aws s3 sync s3://crosschecker.app-data/image_uploads/ ml_model/data/raw/image_uploads
+
+# Download the cached crosswords from s3
+crosswords:
+	aws s3 sync s3://crosschecker.app-data/nyt_answer_keys/ ml_model/data/raw/nyt_answer_keys
