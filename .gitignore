@@ -22,6 +22,8 @@ ml_model/data/processed/*
 !ml_model/data/processed/.gitkeep
 ml_model/data/raw/*
 !ml_model/data/raw/.gitkeep
+ml_model/data/interim/*
+!ml_model/data/interim/.gitkeep
 
 # pycache
 __pycache__
