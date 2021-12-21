@@ -102,10 +102,10 @@ class ImageProcessor:
             angle = np.abs(np.arctan2(y2 - y1, x2 - x1) * 180. / np.pi)
 
             # Draw horizontal lines, forcing them to start at 0 and be the max image width
-            if (angle >=0 and angle <= 10) :
+            if (angle >=0 and angle <= 1) :
                 hlines.append([0,y1,self.maxWidth,y2])
             # Draw vertical lines, forcing them to start at 0 and be the max image height
-            if (angle >= 80 and angle <= 100):
+            if (angle >= 88 and angle <= 91):
                 vlines.append([x1,0,x2,self.maxHeight])
         
         # find unique lines and draw those on the image
