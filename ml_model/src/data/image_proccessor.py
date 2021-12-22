@@ -113,7 +113,7 @@ class ImageProcessor:
         hlines_unique = []
         previous_line_y1 = -1000
         for line in hlines:
-            if line[1] >= previous_line_y1+5: # TODO: instead of skipping the duplicate lines, average the duplicate line's coordinates with the original to get a better fit
+            if line[1] >= previous_line_y1+20: # TODO: instead of skipping the duplicate lines, average the duplicate line's coordinates with the original to get a better fit
                 hlines_unique.append(line)
                 previous_line_y1 = line[1]
                 #cv2.line(lined_unique, (line[0], line[1]), (line[2], line[3]), (255, 0, 255), 2)
@@ -122,7 +122,7 @@ class ImageProcessor:
         vlines_unique = []
         previous_line_x1 = -1000
         for line in vlines:
-            if line[0] >= previous_line_x1+5:
+            if line[0] >= previous_line_x1+20:
                 vlines_unique.append(line)
                 previous_line_x1 = line[0]
                 #cv2.line(lined_unique, (line[0], line[1]), (line[2], line[3]), (255, 255, 0), 2)
