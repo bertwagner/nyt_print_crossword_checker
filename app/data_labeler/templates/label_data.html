@@ -1,0 +1,7 @@
+<!doctype html>
+<title>Data Labeler</title>
+<ul>
+{% for image in image_list %}
+    <li>{{ image['folder'] }}: {{ image['filename'] }}</li>
+{% endfor %}
+</ul>

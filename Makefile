@@ -17,3 +17,7 @@ raw_images:
 # Download the cached crosswords from s3
 crosswords:
 	aws s3 sync s3://crosschecker.app-data/nyt_answer_keys/ ml_model/data/raw/nyt_answer_keys
+
+make labeler:
+	export FLASK_APP=app/data_labeler/app.py
+	flask run
