@@ -1,7 +1,28 @@
 <!doctype html>
 <title>Data Labeler</title>
-<ul>
-{% for image in image_list %}
-    <li>{{ image['folder'] }}: {{ image['filename'] }}</li>
-{% endfor %}
-</ul>
+<style>
+li {
+    list-style: none;
+    vertical-align: middle;
+    padding:3px;
+}
+img {
+    vertical-align: middle;
+}
+input {
+    width: 50px;
+}
+</style>
+<form action="save_labels" method="POST">
+    <ul>
+    {% for image in image_list %}
+        <li>
+            <input type="hidden" name="original_{{ loop.index }}" value="{{ image['folder'] }}"/>
+            <img src="img/{{ image['folder'] }}/{{ image['filename'] }}" />
+            <input type="text" name="corrected_{{ loop.index }}" value="{{ image['folder'] }}"/>
+        </li>
+    {% endfor %}
+    </ul>
+
+    <button type="submit">Save Labels</button>
+</form>
