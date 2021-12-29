@@ -13,13 +13,15 @@ input {
     width: 50px;
 }
 </style>
+<p>{{ images_remaining }} images remain to label.</p>
 <form action="save_labels" method="POST">
     <ul>
     {% for image in image_list %}
         <li>
-            <input type="hidden" name="original_{{ loop.index }}" value="{{ image['folder'] }}"/>
+            <input type="hidden" name="original_label__{{ loop.index }}" value="{{ image['folder'] }}"/>
+            <input type="hidden" name="original_filename__{{ loop.index }}" value="{{ image['filename'] }}"/>
             <img src="img/{{ image['folder'] }}/{{ image['filename'] }}" />
-            <input type="text" name="corrected_{{ loop.index }}" value="{{ image['folder'] }}"/>
+            <input type="text" name="corrected_label__{{ loop.index }}" value="{{ image['folder'] }}"/>
         </li>
     {% endfor %}
     </ul>
