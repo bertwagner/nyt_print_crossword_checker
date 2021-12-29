@@ -93,7 +93,7 @@ class ImageProcessor:
         edges = cv2.Canny(self.image['warped'], 50, 200)
 
         # find lines from edges
-        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 130, None, 5, 5000)
+        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 110, None, 5, 5000)
         hlines = []
         vlines = []
         for line in lines:
@@ -102,12 +102,14 @@ class ImageProcessor:
             angle = np.abs(np.arctan2(y2 - y1, x2 - x1) * 180. / np.pi)
 
             # Draw horizontal lines, forcing them to start at 0 and be the max image width
-            if (angle >=0 and angle <= 1) :
+            if (angle >=0 and angle <= 3) :
                 hlines.append([0,y1,self.maxWidth,y2])
             # Draw vertical lines, forcing them to start at 0 and be the max image height
             if (angle >= 88 and angle <= 91):
                 vlines.append([x1,0,x2,self.maxHeight])
         
+        self.image["lines_drawn"] = lined_unique = self.image["warped"].copy()
+
         # find unique lines and draw those on the image
         hlines.sort(key=lambda x:x[1])
         hlines_unique = []
@@ -116,7 +118,7 @@ class ImageProcessor:
             if line[1] >= previous_line_y1+20: # TODO: instead of skipping the duplicate lines, average the duplicate line's coordinates with the original to get a better fit
                 hlines_unique.append(line)
                 previous_line_y1 = line[1]
-                #cv2.line(lined_unique, (line[0], line[1]), (line[2], line[3]), (255, 0, 255), 2)
+                cv2.line(self.image["lines_drawn"], (line[0], line[1]), (line[2], line[3]), (255, 0, 255), 2)
 
         vlines.sort(key=lambda x:x[0])
         vlines_unique = []
@@ -125,9 +127,9 @@ class ImageProcessor:
             if line[0] >= previous_line_x1+20:
                 vlines_unique.append(line)
                 previous_line_x1 = line[0]
-                #cv2.line(lined_unique, (line[0], line[1]), (line[2], line[3]), (255, 255, 0), 2)
+                cv2.line(self.image["lines_drawn"], (line[0], line[1]), (line[2], line[3]), (255, 255, 0), 2)
 
-        # crop image based on line intersections
+        # crop image into cells based on line intersections
         img = self.image['warped'].copy()
         prev_hline = hlines_unique[0]
         prev_vline = vlines_unique[0]
