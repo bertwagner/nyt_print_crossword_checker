@@ -17,12 +17,14 @@ def main(input_filepath, output_filepath,delete_files):
     crossword_output_path = os.path.join(output_filepath,"nyt_answer_keys")
 
     warped_output_path = os.path.join(image_output_path,"warped")
+    lined_output_path = os.path.join(image_output_path,"lines_drawn")
     __make_folder_if_not_exists(warped_output_path,delete_files)
+    __make_folder_if_not_exists(lined_output_path,delete_files)
     __make_folder_if_not_exists(crossword_output_path,delete_files)
 
     for file in os.scandir(image_input_path):
         answer_key = __process_crossword(file,crossword_input_path,crossword_output_path)
-        __process_image(file,image_input_path,warped_output_path,image_output_path,answer_key)
+        __process_image(file,image_input_path,warped_output_path,lined_output_path,image_output_path,answer_key)
         
 
 def __make_folder_if_not_exists(folder_path,delete_files):
@@ -35,7 +37,7 @@ def __make_folder_if_not_exists(folder_path,delete_files):
     if not path_exists:
         os.makedirs(folder_path)
 
-def __process_image(file,image_input_path,warped_output_path,image_output_path,answer_key):
+def __process_image(file,image_input_path,warped_output_path,lined_output_path,image_output_path,answer_key):
     puzzle_date = datetime.datetime.strptime(file.name[0:10],'%Y-%m-%d').date()
     image_raw = cv2.imread(os.path.join(image_input_path,file.name))
     
@@ -45,9 +47,13 @@ def __process_image(file,image_input_path,warped_output_path,image_output_path,a
     
     
     cv2.imwrite(os.path.join(warped_output_path,file.name),processor.image['warped'])
+    
 
     # slice and save individual cell images
     processor.slice_up_grid()
+
+    # save lined images
+    cv2.imwrite(os.path.join(lined_output_path,file.name),processor.image['lines_drawn'])
 
     # make image folder if it doesn't exist
     output_folder = os.path.join(image_output_path,"cells",os.path.splitext(file.name)[0])
