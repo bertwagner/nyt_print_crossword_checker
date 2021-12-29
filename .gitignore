@@ -28,3 +28,6 @@ ml_model/data/interim/*
 # pycache
 __pycache__
 *egg-info*
+
+#vscode
+.vscode
