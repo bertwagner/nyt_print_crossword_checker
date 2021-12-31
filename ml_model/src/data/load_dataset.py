@@ -3,54 +3,46 @@ import os
 import datetime
 import json
 import cv2
+import numpy as np
 
 
-def main(cell_input_path,crossword_input_path):
+def main(cell_input_path):
 
-    filenames,images = __load_cells(cell_input_path)
-    answers = __load_answers(crossword_input_path, filenames.keys())
-    # TODO: These counts don't match.  Need to probably output these into folders based on the labelled letter to double check answers are correct
-    test=1234
+    cells = load_dataset(cell_input_path)
     
     
 
-def __load_cells(cell_input_path):
-    files = {}
+def load_dataset(cell_input_path):
     images = []
+    targets = []
 
     for folder in os.scandir(cell_input_path):
-        files[folder.name] = []
+        
+        # Skip the unidentified folder
+        if folder.name == "?":
+            continue
 
         for file in os.scandir(folder):
-            files[folder.name].append(file.name)
+            image = cv2.imread(os.path.join(cell_input_path,folder.name,file.name),cv2.IMREAD_GRAYSCALE)
+            
+            #invert colors
+            inverted = cv2.bitwise_not(image)
 
-        files[folder.name].sort(key=lambda x: x)
+            # Resize all images to the same size.  This does not keep proportions.
+            resized = cv2.resize(inverted,(64,64),interpolation=cv2.INTER_AREA)
+            
+            images.append(resized)
+            targets.append(folder.name)
 
-        # Load images in sorted order
-        for image_name in files[folder.name]:
-            image_raw = cv2.imread(os.path.join(cell_input_path,folder.name,image_name))
-            images.append(image_raw)
-
-    return (files,images)
-
-def __load_answers(crossword_input_path, cells):
-
-    targets = []
-    # we lookp over cells because we may have examples of multiple puzzles from the same date and want to maintain the correct answers for each puzzle
-    for puzzle_name in cells:
-        date = datetime.datetime.strptime(puzzle_name[0:10],'%Y-%m-%d').date()
-        with open(os.path.join(crossword_input_path,f'{date}.json'), 'r') as f:
-            data=f.read()
-            targets = targets + json.loads(data)
-
-    return targets
-
+    cells = {}
+    cells["images"] = np.asarray(images)
+    cells["targets"] = np.asarray(targets)
+    return cells
 
 
 if __name__ == '__main__':
     project_dir = Path(__file__).resolve().parents[2]
 
-    cell_input_path = os.path.join(project_dir,"data/processed/image_uploads/cells")
-    crossword_input_path = os.path.join(project_dir,"data/processed/nyt_answer_keys")
+    cell_input_path = os.path.join(project_dir,"data/processed/image_uploads/letters")
 
-    main(cell_input_path,crossword_input_path)
+    main(cell_input_path)
