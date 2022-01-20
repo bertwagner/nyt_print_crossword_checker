@@ -205,7 +205,7 @@ class ImageProcessor:
         cropped_images.append(thresh)
 
         #draw a rectangle to cover the numbers
-        cv2.rectangle(thresh, (0, 0), (10,10), (0,0,0),-1)
+        cv2.rectangle(thresh, (0, 0), (15,12), (0,0,0),-1)
 
         # dilation
         kernel = np.ones((1, 1), np.uint8)
@@ -224,18 +224,6 @@ class ImageProcessor:
         # sort contours
         sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
 
-        # for i, ctr in enumerate(sorted_ctrs):
-        #     # Get bounding box
-        #     x, y, w, h = cv2.boundingRect(ctr)
-
-        #     # Getting ROI
-        #     roi = original[y:y + h, x:x + w]
-        #     cv2.rectangle(original, (x, y), (x + w, y + h), (0, 0, 255), 1)
-        #     # show ROI
-        #     if x > 4 and y > 4 and w > 2 and h > 2 and w < 50: # add minimum box start points and sizes
-        #         cv2.rectangle(original, (x, y), (x + w, y + h), (0, 255, 0), 1)
-
-        # With the rects you can e.g. crop the letters
         x1s = []
         y1s = []
         x2s = []
