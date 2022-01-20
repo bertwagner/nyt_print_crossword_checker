@@ -152,3 +152,116 @@ class ImageProcessor:
             prev_hline=hline
         
         self.image['cells'] = sliced_grid
+
+    def __crop_letters(self,image):
+        cropped_images=[]
+        original = image.copy()
+
+        # # turn grayscale for processing
+        # gray = cv2.cvtColor(original, cv2.COLOR_RGB2GRAY)
+        # _, bw = cv2.threshold(gray, 200, 255.0, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+        # # use MSER https://en.wikipedia.org/wiki/Maximally_stable_extremal_regions
+        # (h, w) = original.shape[:2]
+        # image_size = h*w
+        # mser = cv2.MSER_create()
+        # mser.setMaxArea(int(image_size))
+        # mser.setMinArea(10) # set this to be larger than the size of the numbers in the corners
+        # regions, rects = mser.detectRegions(bw)
+
+        # # With the rects you can e.g. crop the letters
+        # x1s = []
+        # y1s = []
+        # x2s = []
+        # y2s = []
+        # for (x, y, w, h) in rects:
+        #     cv2.rectangle(original, (x, y), (x+w, y+h), color=(0, 0, 255), thickness=1)
+        #     if x > 4 and y > 4 and w > 4 and w < 50: # add minimum box start points and sizes
+        #         x1s.append(x)
+        #         y1s.append(y)
+        #         x2s.append(x+w)
+        #         y2s.append(y+h)
+
+        # if len(x1s) > 0:
+        #     #combine multiple squares into one area
+        #     min_x1 = min(x1s)
+        #     min_y1 = min(y1s)    
+        #     max_x2 = max(x2s)
+        #     max_y2 = max(y2s)
+
+        #     cv2.rectangle(original, (min_x1, min_y1), (max_x2, max_y2), color=(255, 0, 255), thickness=1)
+        
+        # cropped_images.append(original)
+
+        h, w = original.shape[:2]
+
+        # grayscale
+        gray = cv2.cvtColor(original, cv2.COLOR_BGR2GRAY)
+        cropped_images.append(gray)
+
+        # binary
+        # ret, thresh = cv2.threshold(gray, 250, 255, cv2.THRESH_BINARY_INV)
+        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 5)
+        cropped_images.append(thresh)
+
+        #draw a rectangle to cover the numbers
+        cv2.rectangle(thresh, (0, 0), (10,10), (0,0,0),-1)
+
+        # dilation
+        kernel = np.ones((1, 1), np.uint8)
+        img_dilation = cv2.dilate(thresh, kernel, iterations=1)
+        cropped_images.append(img_dilation)
+
+        # find contours
+        # cv2.findCountours() function changed from OpenCV3 to OpenCV4: now it have only two parameters instead of 3
+        cv2MajorVersion = cv2.__version__.split(".")[0]
+        # check for contours on thresh
+        if int(cv2MajorVersion) >= 4:
+            ctrs, hier = cv2.findContours(img_dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        else:
+            im2, ctrs, hier = cv2.findContours(img_dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # sort contours
+        sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
+
+        # for i, ctr in enumerate(sorted_ctrs):
+        #     # Get bounding box
+        #     x, y, w, h = cv2.boundingRect(ctr)
+
+        #     # Getting ROI
+        #     roi = original[y:y + h, x:x + w]
+        #     cv2.rectangle(original, (x, y), (x + w, y + h), (0, 0, 255), 1)
+        #     # show ROI
+        #     if x > 4 and y > 4 and w > 2 and h > 2 and w < 50: # add minimum box start points and sizes
+        #         cv2.rectangle(original, (x, y), (x + w, y + h), (0, 255, 0), 1)
+
+        # With the rects you can e.g. crop the letters
+        x1s = []
+        y1s = []
+        x2s = []
+        y2s = []
+        for i, ctr in enumerate(sorted_ctrs):
+            # Get bounding box
+            x, y, w, h = cv2.boundingRect(ctr)
+            cv2.rectangle(original, (x, y), (x+w, y+h), color=(0, 0, 255), thickness=1)
+            #i and t are hard (especially if disjointed). skinny and multiple parts.
+            if x > 4 and y > 4 and w > 1 and h > 1 and w < 50: # add minimum box start points and sizes
+                x1s.append(x)
+                y1s.append(y)
+                x2s.append(x+w)
+                y2s.append(y+h)
+
+        if len(x1s) > 0:
+            #combine multiple squares into one area
+            min_x1 = min(x1s)
+            min_y1 = min(y1s)    
+            max_x2 = max(x2s)
+            max_y2 = max(y2s)
+
+            cv2.rectangle(original, (min_x1, min_y1), (max_x2, max_y2), color=(255, 0, 0), thickness=1)
+
+        cropped_images.append(original)
+
+            
+        return cropped_images
+
