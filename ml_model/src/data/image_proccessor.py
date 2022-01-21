@@ -146,7 +146,8 @@ class ImageProcessor:
 
                 prev_vline=vline
                 #print("v:",y,yheight,x,xwidth)
-                sliced_grid.append(cropped)
+                cropped_and_centered_letter = self.__crop_letters(cropped)
+                sliced_grid.append(cropped_and_centered_letter)
             
             prev_vline=vlines_unique[0]
             prev_hline=hline
@@ -203,6 +204,7 @@ class ImageProcessor:
                 x2s.append(x+w)
                 y2s.append(y+h)
 
+        final_crop = original
         if len(x1s) > 0:
             #combine multiple squares into one area
             min_x1 = min(x1s)
@@ -229,13 +231,19 @@ class ImageProcessor:
                 max_x2 = max_x2+delta_to_add
 
             square_crop = original[min_y1:max_y2, min_x1:max_x2]
-            resized_square_crop = cv2.resize(square_crop,(16,16),interpolation=cv2.INTER_AREA)
+            
             #cv2.rectangle(original, (min_x1, min_y1), (max_x2, max_y2), color=(255, 0, 0), thickness=1)
             cropped_images.append(square_crop)
-            cropped_images.append(resized_square_crop)
+            
+            final_crop=square_crop
 
         #cropped_images.append(original)
 
             
-        return cropped_images
+        #return cropped_images
+        try:
+            resized_crop = cv2.resize(final_crop,(16,16),interpolation=cv2.INTER_AREA)
+            return resized_crop
+        except:
+            return image
 
