@@ -157,42 +157,6 @@ class ImageProcessor:
         cropped_images=[]
         original = image.copy()
 
-        # # turn grayscale for processing
-        # gray = cv2.cvtColor(original, cv2.COLOR_RGB2GRAY)
-        # _, bw = cv2.threshold(gray, 200, 255.0, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-
-        # # use MSER https://en.wikipedia.org/wiki/Maximally_stable_extremal_regions
-        # (h, w) = original.shape[:2]
-        # image_size = h*w
-        # mser = cv2.MSER_create()
-        # mser.setMaxArea(int(image_size))
-        # mser.setMinArea(10) # set this to be larger than the size of the numbers in the corners
-        # regions, rects = mser.detectRegions(bw)
-
-        # # With the rects you can e.g. crop the letters
-        # x1s = []
-        # y1s = []
-        # x2s = []
-        # y2s = []
-        # for (x, y, w, h) in rects:
-        #     cv2.rectangle(original, (x, y), (x+w, y+h), color=(0, 0, 255), thickness=1)
-        #     if x > 4 and y > 4 and w > 4 and w < 50: # add minimum box start points and sizes
-        #         x1s.append(x)
-        #         y1s.append(y)
-        #         x2s.append(x+w)
-        #         y2s.append(y+h)
-
-        # if len(x1s) > 0:
-        #     #combine multiple squares into one area
-        #     min_x1 = min(x1s)
-        #     min_y1 = min(y1s)    
-        #     max_x2 = max(x2s)
-        #     max_y2 = max(y2s)
-
-        #     cv2.rectangle(original, (min_x1, min_y1), (max_x2, max_y2), color=(255, 0, 255), thickness=1)
-        
-        # cropped_images.append(original)
-
         h, w = original.shape[:2]
 
         # grayscale
@@ -231,7 +195,7 @@ class ImageProcessor:
         for i, ctr in enumerate(sorted_ctrs):
             # Get bounding box
             x, y, w, h = cv2.boundingRect(ctr)
-            cv2.rectangle(original, (x, y), (x+w, y+h), color=(0, 0, 255), thickness=1)
+            #cv2.rectangle(original, (x, y), (x+w, y+h), color=(0, 0, 255), thickness=1)
             #i and t are hard (especially if disjointed). skinny and multiple parts.
             if x > 4 and y > 4 and w > 1 and h > 1 and w < 50: # add minimum box start points and sizes
                 x1s.append(x)
@@ -246,9 +210,31 @@ class ImageProcessor:
             max_x2 = max(x2s)
             max_y2 = max(y2s)
 
-            cv2.rectangle(original, (min_x1, min_y1), (max_x2, max_y2), color=(255, 0, 0), thickness=1)
+            crop_img = original[min_y1:max_y2, min_x1:max_x2]
+            cropped_images.append(crop_img)
 
-        cropped_images.append(original)
+            # make the crop a square
+            crop_width = max_x2-min_x1
+            crop_height = max_y2-min_y1
+
+            if crop_width > crop_height:
+                delta_height = crop_width - crop_height 
+                delta_to_add = int(delta_height/2)
+                min_y1 = min_y1-delta_to_add
+                max_y2 = max_y2+delta_to_add
+            if crop_width < crop_height:
+                delta_width = crop_height - crop_width 
+                delta_to_add = int(delta_width/2)
+                min_x1 = min_x1-delta_to_add
+                max_x2 = max_x2+delta_to_add
+
+            square_crop = original[min_y1:max_y2, min_x1:max_x2]
+            resized_square_crop = cv2.resize(square_crop,(16,16),interpolation=cv2.INTER_AREA)
+            #cv2.rectangle(original, (min_x1, min_y1), (max_x2, max_y2), color=(255, 0, 0), thickness=1)
+            cropped_images.append(square_crop)
+            cropped_images.append(resized_square_crop)
+
+        #cropped_images.append(original)
 
             
         return cropped_images
