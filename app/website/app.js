@@ -13,7 +13,11 @@
 
   const constraints = {
     audio: false,
-    video: { facingMode: "environment"}
+    video: { 
+      facingMode: "environment",
+      width: 1280,
+      height: 720
+    }
   };
 
   canvas.width = 300;
