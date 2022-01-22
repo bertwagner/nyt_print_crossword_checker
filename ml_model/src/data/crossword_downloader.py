@@ -6,6 +6,7 @@ import json
 import requests
 import re
 import datetime
+import time
 
 class CrosswordDownloader:
     BUCKETNAME='crosschecker.app-data'
@@ -46,6 +47,9 @@ class CrosswordDownloader:
         return json_response['email'],json_response['password']
 
     def _download_crossword_answer_key(self,date):
+        #wait 3 seconds between downloads so we don't get blocked
+        time.sleep(3)
+
         email,password = self._get_secret()
         
         s = requests.Session()
@@ -66,7 +70,7 @@ class CrosswordDownloader:
 
         payload="{\"username\":\"%s\",\"auth_token\":\"%s\",\"form_view\":\"login\",\"password\":\"%s\",\"remember_me\":\"Y\"}" % (email,auth_token,password)
         headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0',
         'Accept': 'application/json',
         'Accept-Language': 'en-US,en;q=0.5',
         'Referer': 'https://myaccount.nytimes.com/auth/enter-email?response_type=cookie&client_id=lgcl&redirect_uri=https%3A%2F%2Fwww.nytimes.com',

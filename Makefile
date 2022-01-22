@@ -18,10 +18,10 @@ raw_images:
 crosswords:
 	aws s3 sync s3://crosschecker.app-data/nyt_answer_keys/ ml_model/data/raw/nyt_answer_keys
 
-make labeler:
+labeler:
 	echo "TODO fix this export environment variable"
 	export FLASK_APP=app/data_labeler/app.py
 	flask run
 
-make make_dataset:
-	echo "TODO"
+make_dataset:
+	python ml_model/src/data/make_dataset.py

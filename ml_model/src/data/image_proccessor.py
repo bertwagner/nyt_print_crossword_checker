@@ -115,7 +115,7 @@ class ImageProcessor:
         hlines_unique = []
         previous_line_y1 = -1000
         for line in hlines:
-            if line[1] >= previous_line_y1+20: # TODO: instead of skipping the duplicate lines, average the duplicate line's coordinates with the original to get a better fit
+            if line[1] >= previous_line_y1+40: # TODO: instead of skipping the duplicate lines, average the duplicate line's coordinates with the original to get a better fit
                 hlines_unique.append(line)
                 previous_line_y1 = line[1]
                 cv2.line(self.image["lines_drawn"], (line[0], line[1]), (line[2], line[3]), (255, 0, 255), 2)
@@ -124,7 +124,7 @@ class ImageProcessor:
         vlines_unique = []
         previous_line_x1 = -1000
         for line in vlines:
-            if line[0] >= previous_line_x1+20:
+            if line[0] >= previous_line_x1+40:
                 vlines_unique.append(line)
                 previous_line_x1 = line[0]
                 cv2.line(self.image["lines_drawn"], (line[0], line[1]), (line[2], line[3]), (255, 255, 0), 2)
@@ -204,7 +204,7 @@ class ImageProcessor:
                 x2s.append(x+w)
                 y2s.append(y+h)
 
-        final_crop = original
+        final_crop = image
         if len(x1s) > 0:
             #combine multiple squares into one area
             min_x1 = min(x1s)
@@ -245,5 +245,6 @@ class ImageProcessor:
             resized_crop = cv2.resize(final_crop,(16,16),interpolation=cv2.INTER_AREA)
             return resized_crop
         except:
-            return image
+            resized_crop = cv2.resize(image,(16,16),interpolation=cv2.INTER_AREA)
+            return resized_crop
 
