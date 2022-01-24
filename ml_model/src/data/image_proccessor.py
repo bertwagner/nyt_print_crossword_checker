@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+# Detecting blobs https://en.wikipedia.org/wiki/Blob_detection
+
 class ImageProcessor:
 
     def __init__(self,image):
