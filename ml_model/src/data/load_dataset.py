@@ -29,7 +29,7 @@ def load_dataset(cell_input_path):
             inverted = cv2.bitwise_not(image)
 
             # Resize all images to the same size.  This does not keep proportions.
-            resized = cv2.resize(inverted,(64,64),interpolation=cv2.INTER_AREA)
+            resized = cv2.resize(inverted,(16,16),interpolation=cv2.INTER_AREA)
             
             images.append(resized)
             targets.append(folder.name)
