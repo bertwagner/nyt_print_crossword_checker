@@ -22,6 +22,9 @@ def load_dataset(cell_input_path):
         if folder.name == "?":
             continue
 
+        if folder.name not in ["A","B","C","D","E"]:
+            continue
+
         for file in os.scandir(folder):
             image = cv2.imread(os.path.join(cell_input_path,folder.name,file.name),cv2.IMREAD_GRAYSCALE)
             
@@ -30,7 +33,7 @@ def load_dataset(cell_input_path):
 
             # Resize all images to the same size.  This does not keep proportions.
             resized = cv2.resize(inverted,(16,16),interpolation=cv2.INTER_AREA)
-            
+     
             images.append(resized)
             targets.append(folder.name)
 
