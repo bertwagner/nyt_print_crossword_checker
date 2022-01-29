@@ -6,6 +6,10 @@ An app for checking the answers of your printed New York Times Crossword puzzle.
 
 
 ## TODO
+
+## Lambdas
+- Download NYT answer key in lambda
+
 ### Website
 - Capture/upload only square grid image - full aspect ratio is uploading unneeded data and slowing things down.
 
