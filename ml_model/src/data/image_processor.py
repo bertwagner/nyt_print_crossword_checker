@@ -4,12 +4,90 @@ import numpy as np
 # Detecting blobs https://en.wikipedia.org/wiki/Blob_detection
 
 def load_image(path):
-    image = cv2.imread("../data/raw/image_uploads/2021-11-30-2d4a364a-9008-4c2d-8889-e28544fe7315.png")
+    image = cv2.imread(path)
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return rgb
 
+def crop_grid(image):
+    grid_contour, _ = __find_grid(image)
+
+    corners = __find_corners(grid_contour)
+
+    maxWidth,maxHeight = __calculate_dimensions(corners)
+
+    input_pts = corners
+    output_pts = np.float32([[0, 0],
+                        [0, maxHeight - 1],
+                        [maxWidth - 1, maxHeight - 1],
+                        [maxWidth - 1, 0]])
+
+    h, status = cv2.findHomography(corners, output_pts)
+    warped = cv2.warpPerspective(image.copy(), h, (maxWidth,maxHeight), flags=cv2.INTER_LINEAR)
+
+    return warped
+
+def __find_grid(image):
+    thresh = cv2.adaptiveThreshold(image.copy(), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 10)
+
+    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
+
+    image_contours = cv2.cvtColor(image.copy(), cv2.COLOR_GRAY2RGB)
+
+    max_area_index = -1
+    max_area = -1
+    max_contour  = None
+
+    for i, contour in enumerate(sorted_ctrs):
+        x, y, w, h = cv2.boundingRect(contour)
+        cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=1)
+
+        area = w*h
+        if w*h > max_area:
+            max_area=area
+            max_area_index = i
+            max_contour = contour
+            
+    # color in the max area contour, assumed to be our crossword grid
+    cv2.drawContours(image_contours, sorted_ctrs, max_area_index, (255, 0, 0), 3)
+    return max_contour, image_contours
+
+def __find_corners(grid_contour):
+    peri = cv2.arcLength(grid_contour, True)
+    corners = cv2.approxPolyDP(grid_contour, 0.04 * peri, True)
+    
+    # We always want the top left corner to be first corner and the rest of the points to come in a counterclockwise order
+    points = []
+    points.append(corners[0][0])
+    points.append(corners[1][0])
+    points.append(corners[2][0])
+    points.append(corners[3][0])
+
+    points.sort(key=lambda x:x[0])
+
+    leftPoints = points[:2]
+    rightPoints = points[2:]
+
+    leftPoints.sort(key=lambda x:x[1])
+    rightPoints.sort(key=lambda x:x[1])
+
+    return np.array([leftPoints[0], leftPoints[1], rightPoints[1],rightPoints[0]])
+
+def __calculate_dimensions(corners):
+    pt_A, pt_B, pt_C, pt_D = corners
+
+    # Calculate widths/heights using L2 norm
+    width_AD = np.sqrt(((pt_A[0] - pt_D[0]) ** 2) + ((pt_A[1] - pt_D[1]) ** 2))
+    width_BC = np.sqrt(((pt_B[0] - pt_C[0]) ** 2) + ((pt_B[1] - pt_C[1]) ** 2))
+    maxWidth = max(int(width_AD), int(width_BC))
 
 
+    height_AB = np.sqrt(((pt_A[0] - pt_B[0]) ** 2) + ((pt_A[1] - pt_B[1]) ** 2))
+    height_CD = np.sqrt(((pt_C[0] - pt_D[0]) ** 2) + ((pt_C[1] - pt_D[1]) ** 2))
+    maxHeight = max(int(height_AB), int(height_CD))
+
+    return (maxWidth,maxHeight)
 
 
 # class ImageProcessor:
