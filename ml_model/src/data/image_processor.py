@@ -8,8 +8,8 @@ def load_image(path):
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return rgb
 
-def blur(image):
-    
+
+
 
 
 # class ImageProcessor:
