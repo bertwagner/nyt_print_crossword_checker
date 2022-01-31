@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from imutils import contours
 
 # Detecting blobs https://en.wikipedia.org/wiki/Blob_detection
 
@@ -91,12 +92,16 @@ def __calculate_dimensions(corners):
 
 def crop_letters(image):
 
-    hlines,vlines,_ = __find_grid_lines(image)
+    hlines,vlines, _ = __find_grid_lines(image)
     
     cropped_cells = __crop_cells(hlines,vlines,image)
 
+    cropped_letters = []
+    for cell in cropped_cells:
+        cropped_letter = __crop_letter(cell)
+        cropped_letters.append(cropped_letter)
 
-    return image
+    return cropped_letters
 
 def __find_grid_lines(image):
     image_hough=image.copy()
@@ -115,6 +120,7 @@ def __find_grid_lines(image):
     hlines = []
     vlines = []
 
+
     for i in range(0, len(lines)):
         for rho,theta in lines[i]:
             a = np.cos(theta)
@@ -128,18 +134,29 @@ def __find_grid_lines(image):
             pt2_y = int(y0 - 1000*(a))
             angle = np.degrees(theta)
 
-        # Draw horizontal lines, forcing them to start at 0 and be the max image width
+        # Add horizontal lines
         if angle == 90:
-            hlines.append([pt1_x,pt1_y,pt2_x,pt2_y,angle])
-            #cv2.line(image_hough, pt1, pt2, (0,0,255), 1, cv2.LINE_AA)
-        # Draw vertical lines, forcing them to start at 0 and be the max image height
+            hlines.append([0,pt1_y,image.shape[1],pt2_y,angle])
+
+        # Add vertical lines
         if angle == 0:
-            vlines.append([pt1_x,pt1_y,pt2_x,pt2_y,angle])
-            #cv2.line(image_hough, pt1, pt2, (0,255,0), 1, cv2.LINE_AA)
+            vlines.append([pt1_x,0,pt2_x,image.shape[0],angle])
+
 
     hlines.sort(key=lambda x:x[1])
     vlines.sort(key=lambda x:x[0])
 
+    hlines,vlines = __dedupe_similar_lines(hlines,vlines)
+
+
+    for line in hlines:
+        cv2.line(image_hough, (line[0],line[1]), (line[2],line[3]), (0,255,0), 1, cv2.LINE_AA)
+    for line in vlines:
+        cv2.line(image_hough, (line[0],line[1]), (line[2],line[3]), (0,0,255), 1, cv2.LINE_AA)
+
+    return hlines,vlines,image_hough
+
+def __dedupe_similar_lines(hlines,vlines):
     hlines_unique=[]
     vlines_unique=[]
 
@@ -148,23 +165,20 @@ def __find_grid_lines(image):
     previous_y = -1000
     previous_x = -1000
 
+    # TODO: Split the difference for close lines in the future?
+    # For now, just pad it with some pixels
+    offset_padding=2
     for line in hlines:
         if line[1] >= previous_y + minimum_gap_between_lines:
-            hlines_unique.append([line[0],line[1],line[2],line[3]])
-            previous_y=line[1]
-        # TODO: Split the difference for close lines in the future?
+            hlines_unique.append([line[0],line[1]+offset_padding,line[2],line[3]+offset_padding])
+            previous_y=line[1]+offset_padding
+        
     for line in vlines:
         if line[0] >= previous_x + minimum_gap_between_lines:
-            vlines_unique.append([line[0],line[1],line[2],line[3]])
-            previous_x=line[0]
+            vlines_unique.append([line[0]+offset_padding,line[1],line[2]+offset_padding,line[3]])
+            previous_x=line[0]+offset_padding
 
-
-    for line in hlines_unique:
-        cv2.line(image_hough, (line[0],line[1]), (line[2],line[3]), (0,255,0), 1, cv2.LINE_AA)
-    for line in vlines_unique:
-        cv2.line(image_hough, (line[0],line[1]), (line[2],line[3]), (0,0,255), 1, cv2.LINE_AA)
-
-    return hlines_unique,vlines_unique,image_hough
+    return hlines_unique,vlines_unique
 
 def __crop_cells(hlines,vlines,image):
 
@@ -178,9 +192,12 @@ def __crop_cells(hlines,vlines,image):
             yheight=hline[1]
             x=prev_vline[0]
             xwidth=vline[0]
-            #print(f"y: {y}, yheight: {yheight}, x: {x}, xwidth:{xwidth}, height: {image.shape[0]}, width: {image.shape[1]}")
-            cropped_cell = image[y:yheight,x:xwidth].copy()
-            cropped_cells.append(cropped_cell)
+
+            # validation that we aren't cropping some tiny sliver
+            if yheight-y >= 20 and xwidth-x >=20:
+                cropped_cell = image[y:yheight,x:xwidth].copy()
+                cropped_cells.append(cropped_cell)
+
             prev_vline=vline
         
         prev_vline=vlines[0]
@@ -188,30 +205,138 @@ def __crop_cells(hlines,vlines,image):
 
     return cropped_cells
 
-#     def slice_up_grid(self):
-#         
-#         prev_hline = hlines_unique[0]
-#         prev_vline = vlines_unique[0]
 
-#         sliced_grid = []
+def __remove_grid_lines(hlines,vlines,image):
+    
 
-#         for hline in hlines_unique[1:]:
-#             for vline in vlines_unique[1:]:
-#                 y=prev_hline[1]
-#                 yheight=hline[1]
-#                 x=prev_vline[0]
-#                 xwidth=vline[0]
-#                 cropped = img[y:yheight,x:xwidth].copy()
+    result = image.copy()
 
-#                 prev_vline=vline
-#                 #print("v:",y,yheight,x,xwidth)
-#                 cropped_and_centered_letter = self.__crop_letters(cropped)
-#                 sliced_grid.append(cropped_and_centered_letter)
+    for hline in hlines:
+        cv2.rectangle(result,(hline[0],hline[1]),(hline[2],hline[3]),(255,255,255),5) 
+    for vline in vlines:
+        cv2.rectangle(result,(vline[0],vline[1]),(vline[2],vline[3]),(255,255,255),5)
+    
+    return result
+
+def __crop_letter(image):
+    result = image.copy()
+
+    # Cover the numbers up partially, just enough so they aren't the largest recognized contour.
+    coverup_x=int(image.shape[1]*.5)
+    coverup_y=int(image.shape[0]*.3)
+    print(coverup_x,coverup_y)
+    cv2.rectangle(result, (0, 0), (coverup_x,coverup_y), (255,255,255),-1)
+
+    ret,thresh = cv2.threshold(result, 170, 255, cv2.THRESH_BINARY_INV)
+   
+    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
+
+    image_contours = cv2.cvtColor(image.copy(), cv2.COLOR_GRAY2RGB)
+
+    max_area_index = -1
+    max_area = -1
+    max_contour  = None
+
+    for i, contour in enumerate(sorted_ctrs):
+        x, y, w, h = cv2.boundingRect(contour)
+
+        area = w*h
+        if w*h > max_area:
+            max_area=area
+            max_area_index = i
+            max_contour = contour
             
-#             prev_vline=vlines_unique[0]
-#             prev_hline=hline
-        
-#         self.image['cells'] = sliced_grid
+    #draw a box around the max area contour, assumed to be our crossword grid
+    x, y, w, h = cv2.boundingRect(sorted_ctrs[max_area_index])
+    cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=2)
+
+    return image_contours
+
+    # Create a mask for only the left quadrant, the only place clue number appears
+    # height,width = image.shape[:2]
+    
+    # mask = image.copy()
+    # cv2.rectangle(mask, (0, 0), (width,height), (0,0,0),-1)
+    # cv2.rectangle(mask, (3, 3), (int(width*.4),int(height*.4)), (255,255,255),-1)
+
+    # mask_inv = cv2.bitwise_not(mask)
+
+    # image_masked = cv2.bitwise_or(image, mask_inv)
+
+    # ret,thresh = cv2.threshold(image_masked, 140, 255, cv2.THRESH_BINARY_INV)
+
+    # contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    # sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
+
+    # image_contours = cv2.cvtColor(thresh.copy(), cv2.COLOR_GRAY2RGB)
+
+    # max_area_index = -1
+    # max_area = -1
+    # max_contour  = None
+
+    # for i, contour in enumerate(sorted_ctrs):
+    #     x, y, w, h = cv2.boundingRect(contour)
+    #     #cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=1)
+    #     #cv2.drawContours(image_contours, sorted_ctrs, i, (255, 0, 0), 1)
+    #     area = w*h
+    #     if w*h > max_area:
+    #         max_area=area
+    #         max_area_index = i
+    #         max_contour = contour
+            
+    # #color in the max area contour, assumed to be our crossword grid
+    # cv2.drawContours(image_contours, sorted_ctrs, max_area_index, (255, 0, 0), 3)
+    # x, y, w, h = cv2.boundingRect(sorted_ctrs[max_area_index])
+    # #cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=2)
+    
+    # return image_contours
+
+
+    # TODO: THIS IS GOOD, BUT REMOVE NUMBERS FIRST
+    # height,width = image.shape[:2]
+
+    # thresh = cv2.adaptiveThreshold(image.copy(), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 7, 10)
+
+    # #draw a rectangle to cover the numbers
+    # #coverup_x=int(image.shape[1]*.6)
+    # #coverup_y=int(image.shape[0]*.5)
+
+    # #cv2.rectangle(thresh, (0, 0), (coverup_x,coverup_y), (0,0,0),-1)
+
+    # kernel = np.ones((2,2), np.uint8)
+
+    # image_dilation = cv2.dilate(thresh, kernel, iterations=1)
+
+    # contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    # sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
+
+    # image_contours = cv2.cvtColor(image.copy(), cv2.COLOR_GRAY2RGB)
+
+    # max_area_index = -1
+    # max_area = -1
+    # max_contour  = None
+
+    # for i, contour in enumerate(sorted_ctrs):
+    #     x, y, w, h = cv2.boundingRect(contour)
+    #     #cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=1)
+    #     if w >= (width*.8) and h >= (height*.8):
+    #         area = w*h
+    #         if w*h > max_area:
+    #             max_area=area
+    #             max_area_index = i
+    #             max_contour = contour
+            
+    # #color in the max area contour, assumed to be our crossword grid
+    # cv2.drawContours(image_contours, sorted_ctrs, max_area_index, (255, 0, 0), 3)
+    # x, y, w, h = cv2.boundingRect(sorted_ctrs[max_area_index])
+    # print(x,y,w,h)
+    # cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=2)
+    
+    # return image_contours
 
 #     def __crop_letters(self,image):
 #         cropped_images=[]
