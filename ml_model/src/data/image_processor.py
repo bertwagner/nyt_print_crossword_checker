@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from imutils import contours
+from src.util import utilities as util
 
 # Detecting blobs https://en.wikipedia.org/wiki/Blob_detection
 
@@ -30,7 +31,7 @@ def crop_grid(image):
 
 def __find_grid(image):
     #thresh = cv2.adaptiveThreshold(image.copy(), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 10)
-    ret,thresh = cv2.threshold(image.copy(), 150,255, cv2.THRESH_BINARY_INV)
+    ret,thresh = cv2.threshold(image.copy(), 100,255, cv2.THRESH_BINARY_INV)
     contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
@@ -112,10 +113,11 @@ def __find_grid_lines(image):
     height,width = image.shape[:2]
 
     image_canny = cv2.Canny(image,400,500)
+
     kernel = np.ones((3, 3), np.uint8)
 
-    image_dilation = cv2.dilate(image_canny, kernel, iterations=2)
-
+    image_dilation = cv2.dilate(image_canny, kernel, iterations=4)
+    
     threshold = 500
     image_hough = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
@@ -154,7 +156,7 @@ def __find_grid_lines(image):
 
 
     for line in hlines:
-        cv2.line(image_hough, (line[0],line[1]), (line[2],line[3]), (0,255,0), 1, cv2.LINE_AA)
+        cv2.line(image_hough, (line[0],line[1]), (line[2],line[3]), (255,0,0), 1, cv2.LINE_AA)
     for line in vlines:
         cv2.line(image_hough, (line[0],line[1]), (line[2],line[3]), (0,0,255), 1, cv2.LINE_AA)
 
@@ -221,10 +223,11 @@ def __remove_grid_lines(hlines,vlines,image):
 
 def __find_letter_bounding_box(image):
     result = image.copy()
+    image_height,image_width=image.shape[:2]
 
     # Cover the numbers up partially, just enough so they aren't the largest recognized contour.
-    coverup_x=int(image.shape[1]*.7)
-    coverup_y=int(image.shape[0]*.4)
+    coverup_x=int(image_width*.7)
+    coverup_y=int(image_height*.4)
     cv2.rectangle(result, (0, 0), (coverup_x,coverup_y), (255,255,255),-1)
 
     ret,thresh = cv2.threshold(result, 170, 255, cv2.THRESH_BINARY_INV)
@@ -239,6 +242,10 @@ def __find_letter_bounding_box(image):
     max_area_index = -1
     max_area = -1
     max_contour  = None
+    x=0
+    y=0
+    w=image_width
+    h=image_height
 
     for i, contour in enumerate(sorted_ctrs):
         x, y, w, h = cv2.boundingRect(contour)
@@ -248,9 +255,13 @@ def __find_letter_bounding_box(image):
             max_area=area
             max_area_index = i
             max_contour = contour
-            
+
+    # get the bounding box if an object is found
+    if max_area_index != -1:
+        x,y,w,h = cv2.boundingRect(sorted_ctrs[max_area_index])
+
     #draw a box around the max area contour, assumed to be our crossword grid
-    x, y, w, h = cv2.boundingRect(sorted_ctrs[max_area_index])
+    
     cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=2)
 
     return (x,y,w,h),thresh,image_contours
