@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 import os
-from src.data import image_proccessor as ip
+from src.data import image_processor as ip
 from src.data import crossword_downloader as cd
 import datetime
 import cv2
@@ -71,8 +71,7 @@ def __process_image(file,image_input_path,warped_output_path,lined_output_path,i
 def __process_crossword(file,crosswords_input_path,crossword_output_path):
     date = datetime.datetime.strptime(file.name[0:10],'%Y-%m-%d').date()
 
-    downloader = cd.CrosswordDownloader()
-    answer_key = downloader.get_answer_key(date)
+    answer_key = cd.get_answer_key(date)
     with open(os.path.join(crossword_output_path,f"{date}.json"), "w") as text_file:
         text_file.write(json.dumps(answer_key))
     

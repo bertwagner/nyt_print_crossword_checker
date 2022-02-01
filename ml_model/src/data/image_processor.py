@@ -5,6 +5,7 @@ from imutils import contours
 # Detecting blobs https://en.wikipedia.org/wiki/Blob_detection
 
 def load_image(path):
+    print(path)
     image = cv2.imread(path)
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return rgb
@@ -28,8 +29,8 @@ def crop_grid(image):
     return warped
 
 def __find_grid(image):
-    thresh = cv2.adaptiveThreshold(image.copy(), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 10)
-
+    #thresh = cv2.adaptiveThreshold(image.copy(), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 10)
+    ret,thresh = cv2.threshold(image.copy(), 150,255, cv2.THRESH_BINARY_INV)
     contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
