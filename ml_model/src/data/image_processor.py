@@ -97,8 +97,10 @@ def crop_letters(image):
     cropped_cells = __crop_cells(hlines,vlines,image)
 
     cropped_letters = []
+
     for cell in cropped_cells:
-        cropped_letter = __crop_letter(cell)
+        (x,y,w,h) = __find_letter_bounding_box(cell)
+        cropped_letter = __crop_letter(cell,x,y,w,h)
         cropped_letters.append(cropped_letter)
 
     return cropped_letters
@@ -205,7 +207,6 @@ def __crop_cells(hlines,vlines,image):
 
     return cropped_cells
 
-
 def __remove_grid_lines(hlines,vlines,image):
     
 
@@ -218,18 +219,18 @@ def __remove_grid_lines(hlines,vlines,image):
     
     return result
 
-def __crop_letter(image):
+def __find_letter_bounding_box(image):
     result = image.copy()
 
     # Cover the numbers up partially, just enough so they aren't the largest recognized contour.
-    coverup_x=int(image.shape[1]*.5)
-    coverup_y=int(image.shape[0]*.3)
-    print(coverup_x,coverup_y)
+    coverup_x=int(image.shape[1]*.7)
+    coverup_y=int(image.shape[0]*.4)
     cv2.rectangle(result, (0, 0), (coverup_x,coverup_y), (255,255,255),-1)
 
     ret,thresh = cv2.threshold(result, 170, 255, cv2.THRESH_BINARY_INV)
-   
-    contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    kernel = np.ones((3,3),np.uint8)
+    dilation = cv2.dilate(thresh,kernel,iterations =3 )
+    contours, _ = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
 
@@ -252,183 +253,54 @@ def __crop_letter(image):
     x, y, w, h = cv2.boundingRect(sorted_ctrs[max_area_index])
     cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=2)
 
-    return image_contours
+    return (x,y,w,h),thresh,image_contours
 
-    # Create a mask for only the left quadrant, the only place clue number appears
-    # height,width = image.shape[:2]
+def __crop_letter(image,bounding_box):
+    x,y,w,h=bounding_box
+    image_height,image_width = image.shape[:2]
+    result = image.copy()
+
+    x1=x
+    x2=x+w
+    y1=y
+    y2=y+h
+
+
+    if w > h:
+        delta_height = w - h 
+        delta_to_add = int(delta_height/2)
+
+        y1 -=delta_to_add
+        y2 += delta_to_add
+    if w < h:
+        delta_width = h - w
+        delta_to_add = int(delta_width/2)
+
+        x1 -= delta_to_add
+        x2 += delta_to_add
+
+    print(x1,y1,x2,y2)
+    print(x1 < 0)
+
+    # Fix any numbers going behind image dimensions
+    if x1 < 0:
+        x1=0
+    if y1 < 0:
+        y1=0
+    if x2 > image_width:
+        x2=image_width
+    if y2 > image_height:
+        y2=image_height
+
+
+    square_crop = result[y1:y2, x1:x2]
+
+    #ret,thresh = cv2.threshold(result, 170, 255, cv2.THRESH_BINARY_INV)
+    ret,thresh = cv2.threshold(square_crop, 170, 255, cv2.THRESH_BINARY)
+    resized_crop = cv2.resize(thresh,(24,24),interpolation=cv2.INTER_AREA )
+
     
-    # mask = image.copy()
-    # cv2.rectangle(mask, (0, 0), (width,height), (0,0,0),-1)
-    # cv2.rectangle(mask, (3, 3), (int(width*.4),int(height*.4)), (255,255,255),-1)
 
-    # mask_inv = cv2.bitwise_not(mask)
-
-    # image_masked = cv2.bitwise_or(image, mask_inv)
-
-    # ret,thresh = cv2.threshold(image_masked, 140, 255, cv2.THRESH_BINARY_INV)
-
-    # contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    # sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
-
-    # image_contours = cv2.cvtColor(thresh.copy(), cv2.COLOR_GRAY2RGB)
-
-    # max_area_index = -1
-    # max_area = -1
-    # max_contour  = None
-
-    # for i, contour in enumerate(sorted_ctrs):
-    #     x, y, w, h = cv2.boundingRect(contour)
-    #     #cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=1)
-    #     #cv2.drawContours(image_contours, sorted_ctrs, i, (255, 0, 0), 1)
-    #     area = w*h
-    #     if w*h > max_area:
-    #         max_area=area
-    #         max_area_index = i
-    #         max_contour = contour
-            
-    # #color in the max area contour, assumed to be our crossword grid
-    # cv2.drawContours(image_contours, sorted_ctrs, max_area_index, (255, 0, 0), 3)
-    # x, y, w, h = cv2.boundingRect(sorted_ctrs[max_area_index])
-    # #cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=2)
-    
-    # return image_contours
-
-
-    # TODO: THIS IS GOOD, BUT REMOVE NUMBERS FIRST
-    # height,width = image.shape[:2]
-
-    # thresh = cv2.adaptiveThreshold(image.copy(), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 7, 10)
-
-    # #draw a rectangle to cover the numbers
-    # #coverup_x=int(image.shape[1]*.6)
-    # #coverup_y=int(image.shape[0]*.5)
-
-    # #cv2.rectangle(thresh, (0, 0), (coverup_x,coverup_y), (0,0,0),-1)
-
-    # kernel = np.ones((2,2), np.uint8)
-
-    # image_dilation = cv2.dilate(thresh, kernel, iterations=1)
-
-    # contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    # sorted_ctrs = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
-
-    # image_contours = cv2.cvtColor(image.copy(), cv2.COLOR_GRAY2RGB)
-
-    # max_area_index = -1
-    # max_area = -1
-    # max_contour  = None
-
-    # for i, contour in enumerate(sorted_ctrs):
-    #     x, y, w, h = cv2.boundingRect(contour)
-    #     #cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=1)
-    #     if w >= (width*.8) and h >= (height*.8):
-    #         area = w*h
-    #         if w*h > max_area:
-    #             max_area=area
-    #             max_area_index = i
-    #             max_contour = contour
-            
-    # #color in the max area contour, assumed to be our crossword grid
-    # cv2.drawContours(image_contours, sorted_ctrs, max_area_index, (255, 0, 0), 3)
-    # x, y, w, h = cv2.boundingRect(sorted_ctrs[max_area_index])
-    # print(x,y,w,h)
-    # cv2.rectangle(image_contours, (x, y), (x+w, y+h), color=(0, 255, 0), thickness=2)
-    
-    # return image_contours
-
-#     def __crop_letters(self,image):
-#         cropped_images=[]
-#         original = image.copy()
-
-#         h, w = original.shape[:2]
-
-#         # grayscale
-#         gray = cv2.cvtColor(original, cv2.COLOR_BGR2GRAY)
-#         cropped_images.append(gray)
-
-#         # binary
-#         # ret, thresh = cv2.threshold(gray, 250, 255, cv2.THRESH_BINARY_INV)
-#         thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 5)
-#         cropped_images.append(thresh)
-
-#         #draw a rectangle to cover the numbers
-#         cv2.rectangle(thresh, (0, 0), (15,12), (0,0,0),-1)
-
-#         # dilation
-#         kernel = np.ones((1, 1), np.uint8)
-#         img_dilation = cv2.dilate(thresh, kernel, iterations=1)
-#         cropped_images.append(img_dilation)
-
-#         # find contours
-#         # cv2.findCountours() function changed from OpenCV3 to OpenCV4: now it have only two parameters instead of 3
-#         cv2MajorVersion = cv2.__version__.split(".")[0]
-#         # check for contours on thresh
-#         if int(cv2MajorVersion) >= 4:
-#             ctrs, hier = cv2.findContours(img_dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-#         else:
-#             im2, ctrs, hier = cv2.findContours(img_dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-#         # sort contours
-#         sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
-
-#         x1s = []
-#         y1s = []
-#         x2s = []
-#         y2s = []
-#         for i, ctr in enumerate(sorted_ctrs):
-#             # Get bounding box
-#             x, y, w, h = cv2.boundingRect(ctr)
-#             #cv2.rectangle(original, (x, y), (x+w, y+h), color=(0, 0, 255), thickness=1)
-#             #i and t are hard (especially if disjointed). skinny and multiple parts.
-#             if x > 4 and y > 4 and w > 1 and h > 1 and w < 50: # add minimum box start points and sizes
-#                 x1s.append(x)
-#                 y1s.append(y)
-#                 x2s.append(x+w)
-#                 y2s.append(y+h)
-
-#         final_crop = image
-#         if len(x1s) > 0:
-#             #combine multiple squares into one area
-#             min_x1 = min(x1s)
-#             min_y1 = min(y1s)    
-#             max_x2 = max(x2s)
-#             max_y2 = max(y2s)
-
-#             crop_img = original[min_y1:max_y2, min_x1:max_x2]
-#             cropped_images.append(crop_img)
-
-#             # make the crop a square
-#             crop_width = max_x2-min_x1
-#             crop_height = max_y2-min_y1
-
-#             if crop_width > crop_height:
-#                 delta_height = crop_width - crop_height 
-#                 delta_to_add = int(delta_height/2)
-#                 min_y1 = min_y1-delta_to_add
-#                 max_y2 = max_y2+delta_to_add
-#             if crop_width < crop_height:
-#                 delta_width = crop_height - crop_width 
-#                 delta_to_add = int(delta_width/2)
-#                 min_x1 = min_x1-delta_to_add
-#                 max_x2 = max_x2+delta_to_add
-
-#             square_crop = original[min_y1:max_y2, min_x1:max_x2]
-            
-#             #cv2.rectangle(original, (min_x1, min_y1), (max_x2, max_y2), color=(255, 0, 0), thickness=1)
-#             cropped_images.append(square_crop)
-            
-#             final_crop=square_crop
-
-#         #cropped_images.append(original)
-
-            
-#         #return cropped_images
-#         try:
-#             resized_crop = cv2.resize(final_crop,(16,16),interpolation=cv2.INTER_AREA)
-#             return resized_crop
-#         except:
-#             resized_crop = cv2.resize(image,(16,16),interpolation=cv2.INTER_AREA)
-#             return resized_crop
+    return resized_crop
+   
 
