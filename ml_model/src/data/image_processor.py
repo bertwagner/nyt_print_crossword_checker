@@ -93,14 +93,15 @@ def __calculate_dimensions(corners):
 def crop_letters(image):
 
     hlines,vlines, _ = __find_grid_lines(image)
+    image_removed_grid_lines = __remove_grid_lines(hlines,vlines,image)
     
-    cropped_cells = __crop_cells(hlines,vlines,image)
+    cropped_cells = __crop_cells(hlines,vlines,image_removed_grid_lines)
 
     cropped_letters = []
 
     for cell in cropped_cells:
-        (x,y,w,h) = __find_letter_bounding_box(cell)
-        cropped_letter = __crop_letter(cell,x,y,w,h)
+        found_bounding_box = __find_letter_bounding_box(cell)
+        cropped_letter = __crop_letter(cell,found_bounding_box[0])
         cropped_letters.append(cropped_letter)
 
     return cropped_letters
@@ -208,8 +209,6 @@ def __crop_cells(hlines,vlines,image):
     return cropped_cells
 
 def __remove_grid_lines(hlines,vlines,image):
-    
-
     result = image.copy()
 
     for hline in hlines:
@@ -279,9 +278,6 @@ def __crop_letter(image,bounding_box):
         x1 -= delta_to_add
         x2 += delta_to_add
 
-    print(x1,y1,x2,y2)
-    print(x1 < 0)
-
     # Fix any numbers going behind image dimensions
     if x1 < 0:
         x1=0
@@ -295,7 +291,6 @@ def __crop_letter(image,bounding_box):
 
     square_crop = result[y1:y2, x1:x2]
 
-    #ret,thresh = cv2.threshold(result, 170, 255, cv2.THRESH_BINARY_INV)
     ret,thresh = cv2.threshold(square_crop, 170, 255, cv2.THRESH_BINARY)
     resized_crop = cv2.resize(thresh,(24,24),interpolation=cv2.INTER_AREA )
 
