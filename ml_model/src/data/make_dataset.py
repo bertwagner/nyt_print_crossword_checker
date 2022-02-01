@@ -70,6 +70,7 @@ def __process_image(file,image_input_path,warped_output_path,lined_output_path,i
 
 def __process_crossword(file,crosswords_input_path,crossword_output_path):
     date = datetime.datetime.strptime(file.name[0:10],'%Y-%m-%d').date()
+    
 
     answer_key = cd.get_answer_key(date)
     with open(os.path.join(crossword_output_path,f"{date}.json"), "w") as text_file:

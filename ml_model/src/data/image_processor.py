@@ -117,7 +117,7 @@ def __find_grid_lines(image):
     kernel = np.ones((3, 3), np.uint8)
 
     image_dilation = cv2.dilate(image_canny, kernel, iterations=4)
-    
+
     threshold = 500
     image_hough = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
@@ -166,7 +166,7 @@ def __dedupe_similar_lines(hlines,vlines):
     hlines_unique=[]
     vlines_unique=[]
 
-    minimum_gap_between_lines=20
+    minimum_gap_between_lines=30
 
     previous_y = -1000
     previous_x = -1000
