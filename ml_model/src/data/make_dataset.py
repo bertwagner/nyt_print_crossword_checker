@@ -39,28 +39,27 @@ def __make_folder_if_not_exists(folder_path,delete_files):
 
 def __process_image(file,image_input_path,warped_output_path,lined_output_path,image_output_path,answer_key):
     puzzle_date = datetime.datetime.strptime(file.name[0:10],'%Y-%m-%d').date()
-    image_raw = cv2.imread(os.path.join(image_input_path,file.name))
+    #image_raw = cv2.imread(os.path.join(image_input_path,file.name))
     
     # warp and save image
-    processor = ip.ImageProcessor(image_raw)
-    processor.warp_and_transform()
+    image_raw = ip.load_image(os.path.join(image_input_path,file.name))
+    image_cropped_grid = ip.crop_grid(image_raw)
     
-    
-    cv2.imwrite(os.path.join(warped_output_path,file.name),processor.image['warped'])
+    cv2.imwrite(os.path.join(warped_output_path,file.name),image_cropped_grid)
     
 
     # slice and save individual cell images
-    processor.slice_up_grid()
+    cropped_letters = ip.crop_letters(image_cropped_grid)
 
     # save lined images
-    cv2.imwrite(os.path.join(lined_output_path,file.name),processor.image['lines_drawn'])
+    #cv2.imwrite(os.path.join(lined_output_path,file.name),processor.image['lines_drawn'])
 
     # make image folder if it doesn't exist
     output_folder = os.path.join(image_output_path,"cells",os.path.splitext(file.name)[0])
     __make_folder_if_not_exists(output_folder,delete_files)
     
     # save all cells as individual images
-    for i,cell in enumerate(processor.image['cells']):
+    for i,cell in enumerate(cropped_letters):
         cv2.imwrite(os.path.join(output_folder,f"{str(i).rjust(4,'0')}.png"),cell)
 
         # save the individual cell to the letter folder it's supposed to go to
