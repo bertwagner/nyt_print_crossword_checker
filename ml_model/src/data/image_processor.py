@@ -147,13 +147,22 @@ def __find_grid_lines(image):
         # Add vertical lines
         if angle == 0:
             vlines.append([pt1_x,0,pt2_x,image.shape[0],angle])
+        
+        # Add the 4 border lines for good measure - often they are cropped out.
+        height,width = image.shape[:2]
+        hlines.append([0,2,width,2,90])
+        hlines.append([0,height-2,width,height-2,90])
+        vlines.append([width-2,0,width-2,height,0])
+        vlines.append([2,0,2,height,0])
 
+    image_height,image_width = image.shape[:2]
 
     hlines.sort(key=lambda x:x[1])
     vlines.sort(key=lambda x:x[0])
 
     hlines,vlines = __dedupe_similar_lines(hlines,vlines)
 
+    
 
     for line in hlines:
         cv2.line(image_hough, (line[0],line[1]), (line[2],line[3]), (255,0,0), 1, cv2.LINE_AA)
@@ -184,6 +193,12 @@ def __dedupe_similar_lines(hlines,vlines):
             vlines_unique.append([line[0]+offset_padding,line[1],line[2]+offset_padding,line[3]])
             previous_x=line[0]+offset_padding
 
+    #Last lines shouldn't get the padding...because they'd be off the screen
+    hlines_unique[-1][1] = hlines_unique[-1][1]-offset_padding
+    hlines_unique[-1][3] = hlines_unique[-1][3]-offset_padding
+    vlines_unique[-1][0] = vlines_unique[-1][0]-offset_padding
+    vlines_unique[-1][2] = vlines_unique[-1][2]-offset_padding
+
     return hlines_unique,vlines_unique
 
 def __crop_cells(hlines,vlines,image):
@@ -203,6 +218,12 @@ def __crop_cells(hlines,vlines,image):
             if yheight-y >= 20 and xwidth-x >=20:
                 cropped_cell = image[y:yheight,x:xwidth].copy()
                 cropped_cells.append(cropped_cell)
+
+            # TODO: THIS NEEDS TO BE SMARTER-DON'T RELY ON hardcoded pixel values
+            # Check if any squares are abnormally large - this may indicate an issue
+            if xwidth-x>=60 or yheight-y>=60:
+                print(xwidth-x,yheight-y)
+                raise Exception("ERROR: Cell slicing failed: some cells are too big!") 
 
             prev_vline=vline
         
