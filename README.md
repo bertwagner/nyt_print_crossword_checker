@@ -12,6 +12,7 @@ An app for checking the answers of your printed New York Times Crossword puzzle.
 
 ### Website
 - Capture/upload only square grid image - full aspect ratio is uploading unneeded data and slowing things down.
+- Do a quick check to see if image will be suitable before uploading?
 
 ### ML Model
 - Split the difference for hough lines to get the middle of the grid when splitting (although not sure if this will matter - time maybe better spent cleaning up invidual cropped cells?)
