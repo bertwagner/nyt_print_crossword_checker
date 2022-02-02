@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from imutils import contours
 from src.util import utilities as util
 
 # Detecting blobs https://en.wikipedia.org/wiki/Blob_detection
