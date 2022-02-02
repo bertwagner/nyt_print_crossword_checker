@@ -69,8 +69,8 @@ def __identify_unverified_files(input,output):
                 to_verify.remove(input_item)
                 break
     
-    # At this point, all items in the input_files array still need to be labelled/verified
-    return to_verify
+    # At this point, all items in the to_verify array still need to be labelled/verified
+    return sorted(to_verify, key=lambda k: (k['folder'], k['filename']))
 
 # Traveerse a directory (and subdirectories) and return in a flattened list structure
 def __flatten_directories(directory):
