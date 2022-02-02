@@ -16,3 +16,4 @@ An app for checking the answers of your printed New York Times Crossword puzzle.
 ### ML Model
 - Split the difference for hough lines to get the middle of the grid when splitting (although not sure if this will matter - time maybe better spent cleaning up invidual cropped cells?)
 - Improve slicing algorithm to work on grids of different sizes and inputs of different sizes (don't hardcode unique horizontal/vertical line pixels)
+- Add validation of chopped image - all cells should be roughly same size - erorr out if not, ask user to retake picture
