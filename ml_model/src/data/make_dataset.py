@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 import os
-from src.data import image_proccessor as ip
+from src.data import image_processor as ip
 from src.data import crossword_downloader as cd
 import datetime
 import cv2
@@ -17,14 +17,12 @@ def main(input_filepath, output_filepath,delete_files):
     crossword_output_path = os.path.join(output_filepath,"nyt_answer_keys")
 
     warped_output_path = os.path.join(image_output_path,"warped")
-    lined_output_path = os.path.join(image_output_path,"lines_drawn")
     __make_folder_if_not_exists(warped_output_path,delete_files)
-    __make_folder_if_not_exists(lined_output_path,delete_files)
     __make_folder_if_not_exists(crossword_output_path,delete_files)
 
     for file in os.scandir(image_input_path):
         answer_key = __process_crossword(file,crossword_input_path,crossword_output_path)
-        __process_image(file,image_input_path,warped_output_path,lined_output_path,image_output_path,answer_key)
+        __process_image(file,image_input_path,warped_output_path,image_output_path,answer_key)
         
 
 def __make_folder_if_not_exists(folder_path,delete_files):
@@ -37,30 +35,27 @@ def __make_folder_if_not_exists(folder_path,delete_files):
     if not path_exists:
         os.makedirs(folder_path)
 
-def __process_image(file,image_input_path,warped_output_path,lined_output_path,image_output_path,answer_key):
+def __process_image(file,image_input_path,warped_output_path,image_output_path,answer_key):
     puzzle_date = datetime.datetime.strptime(file.name[0:10],'%Y-%m-%d').date()
-    image_raw = cv2.imread(os.path.join(image_input_path,file.name))
+    #image_raw = cv2.imread(os.path.join(image_input_path,file.name))
     
     # warp and save image
-    processor = ip.ImageProcessor(image_raw)
-    processor.warp_and_transform()
+    image_raw = ip.load_image(os.path.join(image_input_path,file.name))
+    image_cropped_grid = ip.crop_grid(image_raw)
     
-    
-    cv2.imwrite(os.path.join(warped_output_path,file.name),processor.image['warped'])
+    cv2.imwrite(os.path.join(warped_output_path,file.name),image_cropped_grid)
     
 
     # slice and save individual cell images
-    processor.slice_up_grid()
+    cropped_letters = ip.crop_letters(image_cropped_grid)
 
-    # save lined images
-    cv2.imwrite(os.path.join(lined_output_path,file.name),processor.image['lines_drawn'])
 
     # make image folder if it doesn't exist
     output_folder = os.path.join(image_output_path,"cells",os.path.splitext(file.name)[0])
     __make_folder_if_not_exists(output_folder,delete_files)
     
     # save all cells as individual images
-    for i,cell in enumerate(processor.image['cells']):
+    for i,cell in enumerate(cropped_letters):
         cv2.imwrite(os.path.join(output_folder,f"{str(i).rjust(4,'0')}.png"),cell)
 
         # save the individual cell to the letter folder it's supposed to go to
@@ -71,9 +66,9 @@ def __process_image(file,image_input_path,warped_output_path,lined_output_path,i
 
 def __process_crossword(file,crosswords_input_path,crossword_output_path):
     date = datetime.datetime.strptime(file.name[0:10],'%Y-%m-%d').date()
+    
 
-    downloader = cd.CrosswordDownloader()
-    answer_key = downloader.get_answer_key(date)
+    answer_key = cd.get_answer_key(date)
     with open(os.path.join(crossword_output_path,f"{date}.json"), "w") as text_file:
         text_file.write(json.dumps(answer_key))
     
